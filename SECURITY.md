@@ -8,7 +8,7 @@ I aim to acknowledge reports within five working days and to publish a fix in th
 
 ## Supported versions
 
-Only the latest published release receives security updates. Older versions are not patched. Please update through addons.mozilla.org, the Chrome Web Store or the [Releases](https://github.com/0skater0/no-spoiler/releases) page.
+Only the latest published release receives security updates. Older versions are not patched. Please update through [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/no-spoilers-youtube/), the [Chrome Web Store](https://chromewebstore.google.com/detail/hmklilohlfdjlhpmdlidpfklabdopahk) or the [Releases](https://github.com/0skater0/no-spoiler/releases) page.
 
 ## What the extension can access
 

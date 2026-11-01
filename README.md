@@ -2,6 +2,7 @@
 
 ![Latest release](https://img.shields.io/github/v/release/0skater0/no-spoiler)
 ![Firefox users](https://img.shields.io/amo/users/no-spoilers-youtube?label=Firefox%20users)
+![Chrome users](https://img.shields.io/chrome-web-store/users/hmklilohlfdjlhpmdlidpfklabdopahk?label=Chrome%20users)
 ![License](https://img.shields.io/github/license/0skater0/no-spoiler)
 ![Open issues](https://img.shields.io/github/issues/0skater0/no-spoiler)
 ![Last commit](https://img.shields.io/github/last-commit/0skater0/no-spoiler)
@@ -85,7 +86,7 @@ page lets you grant access to YouTube, Twitch or both.
 ### From the stores
 
 - **Firefox:** [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/no-spoilers-youtube/), click *Add to Firefox*.
-- **Chrome:** Chrome Web Store (link follows once the listing is live).
+- **Chrome:** [Chrome Web Store](https://chromewebstore.google.com/detail/hmklilohlfdjlhpmdlidpfklabdopahk), click *Add to Chrome*.
 
 ### Manually (latest build or development)
 
