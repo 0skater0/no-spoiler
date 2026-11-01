@@ -4,6 +4,7 @@
  * - Marks durations on cards by their text, and keeps non-duration stats visible.
  * - Marks the seek bar container for the progress cover.
  * - Moves title tooltips away and back.
+ * - Inserts skip buttons and the centre overlay on videos and clips.
  */
 "use strict";
 
@@ -27,9 +28,11 @@
       '[data-a-target="video-player"] [role="slider"]',
       ".seekbar-interaction-area",
     ],
+    videoPlayer: ['[data-a-target="video-player"]'],
+    playButton: ['[data-a-target="player-play-pause-button"]'],
     tooltips: [
-      'a[data-a-target="preview-card-title-link"][title]',
-      'a[data-a-target="preview-card-title-link"] [title]',
+      '[data-a-target="preview-card-title-link"][title]',
+      '[data-a-target="preview-card-title-link"] [title]',
       'a[data-a-target="preview-card-image-link"][title]',
       '[data-a-target="stream-title"][title]',
       '[data-a-target="player-info-title"][title]',
@@ -96,6 +99,26 @@
     dom.clearAttr(doc, STATIC);
   }
 
+  /* --------------------------- seek controls --------------------------- */
+
+  const videoOf = (container) => () => container.querySelector("video");
+
+  /** Players of videos and clips, not the home page carousel or live streams. */
+  function seekablePlayers(doc) {
+    return dom.queryAll(doc, SEL.videoPlayer).filter((p) => p.getAttribute("data-a-player-type") !== "frontpage");
+  }
+
+  function ensureSkipButtons(doc) {
+    for (const container of seekablePlayers(doc)) {
+      const playBtn = dom.queryFirst(container, SEL.playButton);
+      if (playBtn) NS.player.ensureSkipBar(doc, playBtn, videoOf(container));
+    }
+  }
+
+  function ensureOverlay(doc) {
+    for (const container of seekablePlayers(doc)) NS.player.ensureOverlay(doc, container, videoOf(container));
+  }
+
   /* -------------------------------- hook ------------------------------- */
 
   NS.definePlatform("twitch", {
@@ -114,11 +137,19 @@
       if (ctx.active && opts.hideSeekbarProgress) markSeekbars(doc, doc.defaultView);
       else if (isState) unmarkSeekbars(doc);
 
+      // Seeking only makes sense on videos and clips.
+      const seekable = page === "vod" || page === "clip";
+      if (ctx.active && seekable && opts.skipButtons) ensureSkipButtons(doc);
+      else if (isState || ctx.reason === "navigate") NS.player.remove(doc, "skip-bar");
+
+      if (ctx.active && seekable && opts.overlayControls) ensureOverlay(doc);
+      else if (isState || ctx.reason === "navigate") NS.player.remove(doc, "overlay");
+
       if (ctx.active && opts.hideTooltips) dom.stashTitles(doc, SEL.tooltips);
       else if (isState) dom.restoreTitles(doc);
     },
   });
 
   // Exposed for tests.
-  NS.twitch = { SEL, pageType, markDurations, markSeekbars };
+  NS.twitch = { SEL, pageType, markDurations, markSeekbars, ensureSkipButtons, ensureOverlay };
 })(globalThis);

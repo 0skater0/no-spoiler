@@ -8,7 +8,7 @@ beforeEach(async () => {
 });
 
 const FIXTURES = ["youtube-watch.html", "youtube-home.html"];
-const JS_ONLY = ["disableAutoplay", "skipButtons", "hideTooltips"];
+const JS_ONLY = ["disableAutoplay", "skipButtons", "overlayControls", "hideTooltips"];
 
 function ctx(overrides = {}, optionOverrides = {}) {
   const state = NS.defaultState();
@@ -56,8 +56,8 @@ describe("YouTube thumbnail badges", () => {
   });
 });
 
-describe("YouTube skip buttons", () => {
-  it("inserts exactly one set, also after repeated updates and navigation", () => {
+describe("YouTube seek controls", () => {
+  it("inserts exactly one skip bar, also after repeated updates and navigation", () => {
     mountFixture("youtube-watch.html");
     const c = ctx({}, { skipButtons: true });
     NS.hooks.youtube.update(c);
@@ -67,7 +67,7 @@ describe("YouTube skip buttons", () => {
     const sets = document.querySelectorAll(".ns-skip-controls");
     expect(sets).toHaveLength(1);
     expect(sets[0].previousElementSibling.classList.contains("ytp-play-button")).toBe(true);
-    expect([...sets[0].querySelectorAll("button")].map((b) => b.textContent)).toEqual(["−10", "−5", "+5", "+10"]);
+    expect([...sets[0].querySelectorAll("button")].map((b) => b.textContent)).toEqual(["\u221210m", "\u22125m", "+5m", "+10m"]);
   });
 
   it("re-inserts after the player was rebuilt and removes on disable", () => {
@@ -81,27 +81,27 @@ describe("YouTube skip buttons", () => {
     expect(document.querySelectorAll(".ns-skip-controls")).toHaveLength(0);
   });
 
-  it("skips within the video bounds", () => {
-    mountFixture("youtube-watch.html");
-    const player = document.querySelector(".html5-video-player");
-    const video = player.querySelector("video");
-    Object.defineProperty(video, "duration", { value: 1000, configurable: true });
-    video.currentTime = 200;
-    NS.youtube.skip(player, -300);
-    expect(video.currentTime).toBe(0);
-    NS.youtube.skip(player, 600);
-    expect(video.currentTime).toBe(600);
-    NS.youtube.skip(player, 600);
-    expect(video.currentTime).toBe(1000);
-  });
-
-  it("clicking a button seeks the player's video", () => {
+  it("clicking a skip button seeks the player's video", () => {
     mountFixture("youtube-watch.html");
     NS.hooks.youtube.update(ctx({}, { skipButtons: true }));
     const video = document.querySelector("video");
     video.currentTime = 100;
     document.querySelectorAll(".ns-skip-controls button")[2].click();
     expect(video.currentTime).toBe(400);
+  });
+
+  it("adds one centre overlay to the main player and removes it", () => {
+    mountFixture("youtube-watch.html");
+    const c = ctx({}, { overlayControls: true });
+    NS.hooks.youtube.update(c);
+    NS.hooks.youtube.update({ ...c, reason: "mutation" });
+    const overlays = document.querySelectorAll('#movie_player > [data-ns-player="overlay"]');
+    expect(overlays).toHaveLength(1);
+    expect([...overlays[0].querySelectorAll("button")].map((b) => b.textContent)).toEqual([
+      "\u221210m", "\u22121m", "\u221210s", "\u23EF", "+10s", "+1m", "+10m",
+    ]);
+    NS.hooks.youtube.update(ctx({}, { overlayControls: false }));
+    expect(document.querySelector('[data-ns-player="overlay"]')).toBeNull();
   });
 });
 

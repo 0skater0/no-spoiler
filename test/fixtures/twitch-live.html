@@ -1,0 +1,21 @@
+<!-- Live channel page. NOT yet verified against the live site: built from
+     known class names only, replace with a reduced live snapshot. -->
+<div id="root">
+  <main>
+    <div data-a-target="video-player" class="video-player">
+      <video></video>
+      <div data-a-target="player-controls">
+        <button data-a-target="player-play-pause-button" data-expect-visible></button>
+      </div>
+    </div>
+    <div class="channel-info-content">
+      <p data-a-target="stream-title" data-expect-hidden="maskTitles">Live stream title</p>
+      <span class="live-time" data-expect-hidden="hideLiveUptime"><p>2:13:07</p></span>
+    </div>
+  </main>
+  <div class="right-column">
+    <section class="chat-shell" data-expect-hidden="hideLiveChat">
+      <div class="stream-chat"><div data-test-selector="chat-room-component-layout">Chat</div></div>
+    </section>
+  </div>
+</div>

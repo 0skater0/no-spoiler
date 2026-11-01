@@ -120,6 +120,7 @@ export async function loadExtension(extraFiles = [], { granted } = {}) {
   runScript(await registry());
   runFile("core/storage.js");
   runFile("core/content-core.js");
+  runFile("core/player-controls.js");
   for (const f of extraFiles) runFile(f);
   return { NS: globalThis.NoSpoiler, api };
 }

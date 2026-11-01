@@ -1,0 +1,81 @@
+<!-- Reduced from the live twitch.tv home page (2026-11). -->
+<div id="root">
+  <nav id="side-nav" aria-label="Linke Navigation">
+    <h2 class="tw-title" data-expect-visible>Für dich</h2>
+    <div aria-label="Kanäle, denen du folgst" class="side-nav-section" role="group" data-expect-visible>
+      <div class="followed-side-nav-header" data-a-target="side-nav-header-collapsed" role="heading" aria-level="3"></div>
+      <div class="tw-transition-group">
+        <div class="side-nav-card"><a aria-haspopup="dialog" class="side-nav-card__link" href="/followedchannel">followed</a></div>
+      </div>
+    </div>
+    <div aria-label="Live-Kanäle" class="side-nav-section" role="group" data-expect-hidden="hideSidebarRecommended">
+      <div class="side-nav-header" data-a-target="side-nav-header-collapsed" role="heading" aria-level="3"></div>
+      <div class="side-nav-card"><a aria-haspopup="dialog" href="/recommendedchannel">recommended</a></div>
+    </div>
+    <div aria-label="Empfohlene Kategorien" class="side-nav-section" role="group" data-expect-hidden="hideSidebarCategories">
+      <div class="side-nav-header" data-a-target="side-nav-header-collapsed" role="heading" aria-level="3"></div>
+      <div class="side-nav-card"><a aria-haspopup="dialog" href="/directory/category/league-of-legends">LoL</a></div>
+    </div>
+  </nav>
+
+  <main data-a-target="front-page-main-content">
+    <div data-a-target="front-page-carousel" class="front-page-carousel" data-expect-hidden="hideCarousel">
+      <div class="featured-content-carousel">
+        <div data-a-target="featured-item">
+          <div class="video-player" data-a-target="video-player" data-a-player-type="frontpage">
+            <video></video>
+            <div data-a-target="player-controls"><button data-a-target="player-play-pause-button"></button></div>
+          </div>
+          <p data-test-selector="carousel-title" data-expect-hidden="maskTitles hideCarousel">Stream title in the carousel</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live card -->
+    <article>
+      <div class="ScTextWrapper">
+        <a data-test-selector="TitleAndChannel" data-a-target="preview-card-channel-link" aria-label="someone streamt Title" href="/someone">
+          <div>
+            <button data-test-selector="StreamTitle" data-a-target="preview-card-title-link" tabindex="-1">
+              <h4 dir="auto" title="Live stream title" data-expect-hidden="maskTitles">Live stream title</h4>
+            </button>
+          </div>
+          <div>
+            <p data-a-target="preview-card-channel-link" tabindex="-1" data-expect-hidden="hideCardChannelName"><span><p title="Someone">Someone</p></span></p>
+          </div>
+        </a>
+        <p><a data-test-selector="GameLink" data-a-target="preview-card-game-link" href="/directory/category/minecraft" data-expect-hidden="hideCardCategory">Minecraft</a></p>
+        <div>
+          <a aria-label="Tag, Deutsch" data-a-target="Deutsch" class="ScTag tw-tag" href="/directory/all/tags/Deutsch" data-expect-hidden="hideCardTags">Deutsch</a>
+        </div>
+      </div>
+      <div class="ScImageWrapper">
+        <a data-test-selector="preview-card-avatar" class="preview-card-avatar tw-link" href="/someone" data-expect-hidden="hideCardAvatar">
+          <img class="tw-image-avatar" alt="Someone" />
+        </a>
+      </div>
+      <div class="feedback-card" data-expect-visible><button aria-label="Weitere Optionen"></button></div>
+      <a data-a-target="preview-card-image-link" tabindex="-1" href="/someone">
+        <img alt="Live stream title" class="tw-image" data-expect-hidden="blurLiveThumbnails" />
+        <div class="tw-channel-status-text" data-expect-visible><span>LIVE</span></div>
+        <div class="tw-media-card-stat" data-expect-visible>4.930 Zuschauer</div>
+      </a>
+    </article>
+
+    <!-- Continue watching: video card with watch progress -->
+    <article data-a-target="followed-vod-0">
+      <a data-a-target="preview-card-image-link" href="/videos/987654">
+        <img class="tw-image" data-test-selector="preview-card-thumbnail__image-selector" data-expect-hidden="blurThumbnails" />
+        <div class="progress-track" data-expect-hidden="hideWatchProgress">
+          <div data-a-target="tw-progress-bar-animation" style="width: 70%"></div>
+        </div>
+      </a>
+    </article>
+
+    <!-- Category box art (not a spoiler) -->
+    <div data-a-target="card-0">
+      <a data-a-target="tw-box-art-card-link" href="/directory/category/fortnite"><img data-a-target="tw-card-image" data-expect-visible /></a>
+      <h2 data-a-target="tw-card-title" data-expect-visible>Fortnite</h2>
+    </div>
+  </main>
+</div>

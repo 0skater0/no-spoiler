@@ -16,7 +16,12 @@
           </div>
           <p data-a-target="player-seekbar-duration" data-expect-hidden="hidePlayerTime">3:12:45</p>
         </div>
-        <button data-a-target="player-play-pause-button" data-expect-visible></button>
+        <div data-a-target="player-controls">
+          <div class="left-controls">
+            <div class="play-wrapper"><button data-a-target="player-play-pause-button" data-expect-visible></button></div>
+            <div class="volume" data-expect-visible></div>
+          </div>
+        </div>
       </div>
     </div>
     <div data-a-target="player-info">

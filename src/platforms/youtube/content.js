@@ -1,7 +1,7 @@
 /*
  * YouTube: the parts CSS cannot do.
  * - Marks thumbnail badges that are not durations, so CSS can show them again.
- * - Inserts skip buttons next to the play button (once per player).
+ * - Inserts skip buttons and the centre overlay (core/player-controls.js).
  * - Switches autoplay off and back on.
  * - Replaces the tab title and removes title tooltips.
  */
@@ -20,6 +20,7 @@
     // Old layouts without a dedicated badge element: plain text inside the thumbnail
     badgeText: ["ytd-thumbnail #overlays span", "ytd-thumbnail #overlays div"],
     playButton: [".html5-video-player .ytp-play-button"],
+    player: ["#movie_player", ".html5-video-player"],
     tooltips: [
       "#video-title[title]",
       "#video-title-link[title]",
@@ -32,7 +33,6 @@
   const KEEP = "data-ns-keep";
   const DURATION = "data-ns-duration";
   const AUTOPLAY_RESTORE_KEY = "youtube.autoplayRestore";
-  const SKIP_STEPS = [-600, -300, 300, 600];
 
   /* -------------------------- thumbnail badges ------------------------- */
 
@@ -55,51 +55,23 @@
     dom.clearAttr(doc, DURATION);
   }
 
-  /* ---------------------------- skip buttons --------------------------- */
+  /* --------------------------- seek controls --------------------------- */
 
-  function formatStep(seconds) {
-    const min = Math.abs(seconds) / 60;
-    return `${seconds < 0 ? "−" : "+"}${min}`;
-  }
+  const videoOf = (playerEl) => () => playerEl.querySelector("video");
 
-  function createSkipControls(doc, player) {
-    const box = doc.createElement("div");
-    box.className = "ns-skip-controls";
-    for (const step of SKIP_STEPS) {
-      const btn = doc.createElement("button");
-      btn.type = "button";
-      btn.textContent = formatStep(step);
-      const label = `${step < 0 ? "Back" : "Forward"} ${Math.abs(step) / 60} minutes`;
-      btn.setAttribute("aria-label", label);
-      btn.title = label;
-      btn.addEventListener("click", (event) => {
-        event.stopPropagation();
-        skip(player, step);
-      });
-      box.appendChild(btn);
-    }
-    return box;
-  }
-
-  function skip(player, seconds) {
-    const video = player?.querySelector("video");
-    if (!video) return;
-    const max = Number.isFinite(video.duration) ? video.duration : Infinity;
-    video.currentTime = Math.min(max, Math.max(0, video.currentTime + seconds));
-  }
-
-  /** Idempotent: inserts at most one set of buttons per player bar. */
+  /** Idempotent: at most one skip bar per control bar. */
   function ensureSkipButtons(doc) {
     for (const playBtn of dom.queryAll(doc, SEL.playButton)) {
-      const bar = playBtn.parentElement;
-      if (!bar || bar.querySelector(".ns-skip-controls")) continue;
-      const player = playBtn.closest(".html5-video-player");
-      bar.insertBefore(createSkipControls(doc, player), playBtn.nextSibling);
+      const playerEl = playBtn.closest(".html5-video-player");
+      if (playerEl) NS.player.ensureSkipBar(doc, playBtn, videoOf(playerEl));
     }
   }
 
-  function removeSkipButtons(doc) {
-    for (const el of doc.querySelectorAll(".ns-skip-controls")) el.remove();
+  /** Idempotent: at most one overlay per player. */
+  function ensureOverlay(doc) {
+    for (const playerEl of dom.queryAll(doc, SEL.player)) {
+      if (playerEl.querySelector(".ytp-play-button")) NS.player.ensureOverlay(doc, playerEl, videoOf(playerEl));
+    }
   }
 
   /* ----------------------------- tab title ----------------------------- */
@@ -173,7 +145,10 @@
       else if (ctx.reason === "state") unmarkBadges(doc);
 
       if (ctx.active && opts.skipButtons) ensureSkipButtons(doc);
-      else if (ctx.reason === "state") removeSkipButtons(doc);
+      else if (ctx.reason === "state") NS.player.remove(doc, "skip-bar");
+
+      if (ctx.active && opts.overlayControls) ensureOverlay(doc);
+      else if (ctx.reason === "state") NS.player.remove(doc, "overlay");
 
       if (ctx.active && opts.maskTitles) maskTabTitle(doc);
       else if (ctx.reason === "state") restoreTabTitle(doc);
@@ -187,5 +162,5 @@
   });
 
   // Exposed for tests.
-  NS.youtube = { SEL, markBadges, ensureSkipButtons, removeSkipButtons, skip, AUTOPLAY_RESTORE_KEY, TAB_TITLE };
+  NS.youtube = { SEL, markBadges, ensureSkipButtons, ensureOverlay, AUTOPLAY_RESTORE_KEY, TAB_TITLE };
 })(globalThis);

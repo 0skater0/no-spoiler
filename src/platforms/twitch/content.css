@@ -59,6 +59,13 @@ html.ns-on.ns-twitch-hideEndRecommendations .autoplay-vod__content-container {
   display: none !important;
 }
 
+/* Chat on live streams (selectors not yet verified against the live site) */
+html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) .stream-chat,
+html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) .chat-shell,
+html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) [data-test-selector="chat-room-component-layout"] {
+  display: none !important;
+}
+
 /* Chat replay on video pages */
 html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] [data-a-target="video-chat"],
 html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] .video-chat {
@@ -97,28 +104,68 @@ html.ns-on.ns-twitch-disableCardHoverPreview [data-a-target="preview-card-image-
 }
 
 /*
- * Titles of videos and clips. The text stays in the DOM (Twitch's React
- * would re-render it anyway); it is shrunk to zero and a placeholder is shown.
+ * Titles. The text stays in the DOM (Twitch's React would re-render it
+ * anyway); it is shrunk to zero and a placeholder is shown. The card title
+ * is a <button data-a-target="preview-card-title-link"> on current Twitch.
  */
-html.ns-on.ns-twitch-maskTitles a[data-a-target="preview-card-title-link"][href*="/videos/"] :is(h3, h4, p),
-html.ns-on.ns-twitch-maskTitles a[data-a-target="preview-card-title-link"][href*="/clip/"] :is(h3, h4, p),
-html.ns-on.ns-twitch-maskTitles[data-ns-page="vod"] [data-a-target="stream-title"],
-html.ns-on.ns-twitch-maskTitles[data-ns-page="clip"] [data-a-target="stream-title"],
-html.ns-on.ns-twitch-maskTitles[data-ns-page="vod"] [data-a-target="player-info-title"],
-html.ns-on.ns-twitch-maskTitles[data-ns-page="clip"] [data-a-target="player-info-title"] {
+html.ns-on.ns-twitch-maskTitles [data-a-target="preview-card-title-link"] :is(h3, h4, p),
+html.ns-on.ns-twitch-maskTitles [data-a-target="stream-title"],
+html.ns-on.ns-twitch-maskTitles [data-a-target="player-info-title"],
+html.ns-on.ns-twitch-maskTitles [data-test-selector="carousel-title"] {
   font-size: 0 !important;
 }
 
-html.ns-on.ns-twitch-maskTitles a[data-a-target="preview-card-title-link"][href*="/videos/"] :is(h3, h4, p)::after,
-html.ns-on.ns-twitch-maskTitles a[data-a-target="preview-card-title-link"][href*="/clip/"] :is(h3, h4, p)::after,
-html.ns-on.ns-twitch-maskTitles[data-ns-page="vod"] [data-a-target="stream-title"]::after,
-html.ns-on.ns-twitch-maskTitles[data-ns-page="clip"] [data-a-target="stream-title"]::after,
-html.ns-on.ns-twitch-maskTitles[data-ns-page="vod"] [data-a-target="player-info-title"]::after,
-html.ns-on.ns-twitch-maskTitles[data-ns-page="clip"] [data-a-target="player-info-title"]::after {
+html.ns-on.ns-twitch-maskTitles [data-a-target="preview-card-title-link"] :is(h3, h4, p)::after,
+html.ns-on.ns-twitch-maskTitles [data-a-target="stream-title"]::after,
+html.ns-on.ns-twitch-maskTitles [data-a-target="player-info-title"]::after,
+html.ns-on.ns-twitch-maskTitles [data-test-selector="carousel-title"]::after {
   content: "Title hidden";
   font-size: 1.4rem;
   font-style: italic;
   opacity: 0.7;
+}
+
+/* Cards: watch progress of videos ("continue watching") */
+html.ns-on.ns-twitch-hideWatchProgress [data-a-target="tw-progress-bar-animation"],
+html.ns-on.ns-twitch-hideWatchProgress :has(> [data-a-target="tw-progress-bar-animation"]) {
+  display: none !important;
+}
+
+/* Cards: category, tags, avatar, streamer name */
+html.ns-on.ns-twitch-hideCardCategory [data-a-target="preview-card-game-link"] {
+  display: none !important;
+}
+
+html.ns-on.ns-twitch-hideCardTags article a[href*="/directory/all/tags/"],
+html.ns-on.ns-twitch-hideCardTags article .tw-tag {
+  display: none !important;
+}
+
+html.ns-on.ns-twitch-hideCardAvatar [data-test-selector="preview-card-avatar"],
+html.ns-on.ns-twitch-hideCardAvatar a.preview-card-avatar {
+  display: none !important;
+}
+
+html.ns-on.ns-twitch-hideCardChannelName p[data-a-target="preview-card-channel-link"] {
+  display: none !important;
+}
+
+/* Home page: featured carousel (including the headliner ad) */
+html.ns-on.ns-twitch-hideCarousel [data-a-target="front-page-carousel"] {
+  display: none !important;
+}
+
+/*
+ * Sidebar sections. Their labels are localised, so they are told apart by
+ * content: followed channels have their own header, categories link to
+ * /directory/category/, the rest are recommended live channels.
+ */
+html.ns-on.ns-twitch-hideSidebarRecommended #side-nav .side-nav-section:not(:has(.followed-side-nav-header)):not(:has(a[href^="/directory/"])) {
+  display: none !important;
+}
+
+html.ns-on.ns-twitch-hideSidebarCategories #side-nav .side-nav-section:has(a[href^="/directory/category/"]) {
+  display: none !important;
 }
 
 /* Live: stream uptime */

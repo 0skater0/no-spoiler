@@ -84,38 +84,9 @@ html.ns-on.ns-youtube-hideWatchProgress .ytThumbnailOverlayProgressBarHost {
   display: none !important;
 }
 
-/* Skip buttons, inserted by content.js */
-.ns-skip-controls {
-  display: inline-flex;
-  align-items: center;
+/* Skip bar: match the height of YouTube's control bar */
+.ytp-left-controls > .ns-skip-controls {
   height: 100%;
-  gap: 2px;
-  vertical-align: top;
-}
-
-html:not(.ns-on) .ns-skip-controls,
-html:not(.ns-youtube-skipButtons) .ns-skip-controls {
-  display: none !important;
-}
-
-.ns-skip-controls button {
-  all: unset;
-  box-sizing: border-box;
-  min-width: 36px;
-  height: 28px;
-  padding: 0 6px;
-  border-radius: 14px;
-  color: #fff;
-  font: 500 13px/28px Roboto, Arial, sans-serif;
-  text-align: center;
-  cursor: pointer;
-  opacity: 0.9;
-}
-
-.ns-skip-controls button:hover,
-.ns-skip-controls button:focus-visible {
-  background: rgba(255, 255, 255, 0.2);
-  opacity: 1;
 }
 
 /*

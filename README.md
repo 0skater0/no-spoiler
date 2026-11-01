@@ -37,6 +37,7 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide end screen and end cards | on |
 | Turn off autoplay (switched back on when protection is turned off) | on |
 | Skip buttons -10, -5, +5, +10 minutes next to the play button | off |
+| Seek controls in the middle of the video on hover (-10m, -1m, -10s, play/pause, +10s, +1m, +10m) | off |
 | Hide comments | on |
 | Hide description and chapter list | on |
 | Hide recommendations next to the video | on |
@@ -54,13 +55,20 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide progress in the seek bar | on |
 | Hide seek bar hover preview | on |
 | Hide recommendations at the end of a video | on |
+| Skip buttons next to play on videos (-10, -5, +5, +10 min) | off |
+| Seek controls in the middle of videos on hover | off |
 | Hide chat replay on videos | on |
+| Hide chat on live streams | off |
 | Blur video and clip thumbnails | on |
 | Blur live stream thumbnails | off |
-| Hide video and clip lengths on cards | on |
-| Disable video previews when hovering cards | on |
-| Hide video and clip titles | off |
+| Hide video and clip lengths | on |
+| Hide watch progress bars on videos | on |
+| Disable video previews on hover | on |
+| Hide category, tags, streamer avatar, streamer name on cards | off |
+| Hide titles of streams, videos and clips | off |
 | Hide title tooltips | off |
+| Hide featured carousel on the home page | off |
+| Hide recommended channels / categories in the sidebar | off |
 | Hide stream uptime | on |
 
 Twitch needs access to `twitch.tv`, which the extension asks for when you
@@ -113,6 +121,7 @@ src/
     registry.js      platform registry, settings model, html classes
     storage.js       storage access and migration from 0.9.x
     content-core.js  content runtime: classes, observer, SPA navigation, helpers
+    player-controls.js skip bar and centre overlay shared by all platforms
     content-start.js starts the runtime (last content script file)
   platforms/<id>/  one folder per site
     platform.json    id, label, match patterns, host access, options
@@ -214,7 +223,8 @@ The extension makes no network requests.
    ```
 
    Helpers in `NoSpoiler.dom`: `isDuration`, `queryAll`, `queryFirst`,
-   `badgeFor`, `stashTitles`, `restoreTitles`, `clearAttr`.
+   `badgeFor`, `stashTitles`, `restoreTitles`, `clearAttr`. Seek controls in
+   `NoSpoiler.player`: `ensureSkipBar`, `ensureOverlay`, `remove`.
 
 4. Add fixtures to `test/fixtures/` (see its README) and a test like
    `test/twitch.test.js`. Every option needs at least one

@@ -9,7 +9,10 @@ export const CONTENT_CORE_BEFORE = [
   "core/platforms.generated.js",
   "core/storage.js",
   "core/content-core.js",
+  "core/player-controls.js",
 ];
+/** Stylesheets every content script loads before the platform's own. */
+export const CONTENT_CSS_BEFORE = ["core/player-controls.css"];
 export const CONTENT_CORE_AFTER = ["core/content-start.js"];
 
 /** Files loaded by the background (event page / service worker). */
@@ -35,7 +38,8 @@ export async function discoverPlatforms(srcDir) {
     const js = [...CONTENT_CORE_BEFORE];
     if (await exists(path.join(base, "content.js"))) js.push(`platforms/${meta.id}/content.js`);
     js.push(...CONTENT_CORE_AFTER);
-    const css = (await exists(path.join(base, "content.css"))) ? [`platforms/${meta.id}/content.css`] : [];
+    const css = [...CONTENT_CSS_BEFORE];
+    if (await exists(path.join(base, "content.css"))) css.push(`platforms/${meta.id}/content.css`);
     platforms.push({ ...meta, contentFiles: { js, css } });
   }
   return platforms.sort((a, b) => (a.order ?? 1000) - (b.order ?? 1000) || a.id.localeCompare(b.id));

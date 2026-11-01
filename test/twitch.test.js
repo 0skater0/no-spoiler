@@ -7,7 +7,7 @@ beforeEach(async () => {
   ({ NS } = await loadExtension(["platforms/twitch/content.js"]));
 });
 
-const JS_ONLY = ["hideTooltips"];
+const JS_ONLY = ["hideTooltips", "skipButtons", "overlayControls"];
 
 function ctx(overrides = {}, optionOverrides = {}) {
   const state = NS.defaultState();
@@ -24,8 +24,21 @@ describe("Twitch stylesheet", () => {
     checkFixture(NS, "twitch", "twitch-directory.html", { url: "https://www.twitch.tv/directory/category/x/videos" });
   });
 
+  it("hides what each option promises on the home page (live markup)", () => {
+    checkFixture(NS, "twitch", "twitch-home.html", { url: "https://www.twitch.tv/" });
+  });
+
+  it("hides what each option promises on a live channel", () => {
+    checkFixture(NS, "twitch", "twitch-live.html", { url: "https://www.twitch.tv/somechannel" });
+  });
+
+  it("keeps the chat replay rule and the live chat rule apart", () => {
+    const hidden = render(NS, "twitch", "twitch-live.html", ["hideLiveChat"], { url: "https://www.twitch.tv/videos/1" });
+    expect(hidden(document.querySelector(".chat-shell"))).toBe(false);
+  });
+
   it("covers every CSS option with a fixture expectation", () => {
-    const covered = coveredOptions(["twitch-vod.html", "twitch-directory.html"].map(fixture));
+    const covered = coveredOptions(["twitch-vod.html", "twitch-directory.html", "twitch-home.html", "twitch-live.html"].map(fixture));
     const keys = NS.getPlatform("twitch").options.map((o) => o.key).filter((k) => !JS_ONLY.includes(k));
     for (const k of keys) expect(covered.has(k), k).toBe(true);
   });
@@ -35,9 +48,10 @@ describe("Twitch stylesheet", () => {
     for (const el of document.querySelectorAll("[data-expect-keep]")) expect(hidden(el)).toBe(true);
   });
 
-  it("masks titles only on video and clip pages", () => {
-    const hidden = render(NS, "twitch", "twitch-vod.html", ["maskTitles"], { url: "https://www.twitch.tv/somechannel" });
-    expect(hidden(document.querySelector('[data-a-target="stream-title"]'))).toBe(false);
+  it("tells sidebar sections apart without their localised labels", () => {
+    const hidden = render(NS, "twitch", "twitch-home.html", ["hideSidebarRecommended", "hideSidebarCategories"], { url: "https://www.twitch.tv/" });
+    const sections = [...document.querySelectorAll(".side-nav-section")].map(hidden);
+    expect(sections).toEqual([false, true, true]);
   });
 });
 
@@ -94,5 +108,40 @@ describe("Twitch tooltips", () => {
     expect(document.querySelectorAll("[title]")).toHaveLength(0);
     NS.hooks.twitch.update(ctx({}, { hideTooltips: false }));
     expect([...document.querySelectorAll("[title]")].map((e) => e.getAttribute("title"))).toEqual(before);
+  });
+});
+
+describe("Twitch seek controls", () => {
+  it("adds skip bar and overlay on video pages only, once", () => {
+    mountFixture("twitch-vod.html");
+    const c = ctx({ url: "https://www.twitch.tv/videos/1" }, { skipButtons: true, overlayControls: true });
+    NS.hooks.twitch.update(c);
+    NS.hooks.twitch.update({ ...c, reason: "mutation" });
+    expect(document.querySelectorAll('[data-ns-player="skip-bar"]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-ns-player="overlay"]')).toHaveLength(1);
+    // inserted after the play button's wrapper, inside the left controls
+    const bar = document.querySelector('[data-ns-player="skip-bar"]');
+    expect(bar.previousElementSibling.classList.contains("play-wrapper")).toBe(true);
+
+    NS.hooks.twitch.update({ ...c, reason: "navigate", url: "https://www.twitch.tv/somechannel" });
+    expect(document.querySelector("[data-ns-player]")).toBeNull();
+  });
+
+  it("does not touch the home page carousel player", () => {
+    mountFixture("twitch-home.html");
+    NS.hooks.twitch.update(ctx({ url: "https://www.twitch.tv/videos/1" }, { skipButtons: true, overlayControls: true }));
+    expect(document.querySelector("[data-ns-player]")).toBeNull();
+  });
+
+  it("the overlay seeks and toggles play", () => {
+    mountFixture("twitch-vod.html");
+    NS.hooks.twitch.update(ctx({ url: "https://www.twitch.tv/videos/1" }, { overlayControls: true }));
+    const video = document.querySelector("video");
+    video.currentTime = 100;
+    const buttons = [...document.querySelectorAll('[data-ns-player="overlay"] button')];
+    buttons.find((b) => b.textContent === "+1m").click();
+    expect(video.currentTime).toBe(160);
+    buttons.find((b) => b.textContent === "\u221210m").click();
+    expect(video.currentTime).toBe(0);
   });
 });
