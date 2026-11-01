@@ -26,8 +26,10 @@ describe("platform section", () => {
     const yt = NS.getPlatform("youtube");
     const { state } = await NS.ui.load();
     const el = NS.ui.platformSection(yt, state, true, {});
-    expect(el.querySelectorAll('input[role="switch"]')).toHaveLength(yt.options.length + 1);
-    expect([...el.querySelectorAll("legend")].map((l) => l.textContent)).toEqual(["Player", "Watch page", "Thumbnails", "Titles"]);
+    const booleans = yt.options.filter((o) => NS.optionType(o) === "boolean");
+    expect(el.querySelectorAll('input[role="switch"]')).toHaveLength(booleans.length + 1);
+    expect(el.querySelectorAll(".ns-steps")).toHaveLength(yt.options.length - booleans.length);
+    expect([...el.querySelectorAll("legend")].map((l) => l.textContent)).toEqual(["Player", "Jump buttons", "Watch page", "Thumbnails", "Titles"]);
   });
 
   it("writes changes to storage immediately", async () => {
@@ -54,8 +56,9 @@ describe("platform section", () => {
   it("summarises collapsed rows", async () => {
     const yt = NS.getPlatform("youtube");
     const { state } = await NS.ui.load();
-    const on = yt.options.filter((o) => o.default).length;
-    expect(NS.ui.summary(yt, state, true)).toBe(`${on} of ${yt.options.length} on`);
+    const booleans = yt.options.filter((o) => NS.optionType(o) === "boolean");
+    const on = booleans.filter((o) => o.default).length;
+    expect(NS.ui.summary(yt, state, true)).toBe(`${on} of ${booleans.length} on`);
     state.platforms.youtube.enabled = false;
     expect(NS.ui.summary(yt, state, true)).toBe("Off");
     expect(NS.ui.summary(yt, state, false)).toBe("No access yet");
@@ -75,6 +78,28 @@ describe("platform section", () => {
     await flush();
     expect(renders).toBe(2);
     expect(box.querySelector('details[data-platform="youtube"]').open).toBe(true);
+  });
+});
+
+describe("jump size picker", () => {
+  it("is disabled while its switch is off and stores the chosen sizes", async () => {
+    const yt = NS.getPlatform("youtube");
+    let { state } = await NS.ui.load();
+    let el = NS.ui.platformSection(yt, state, true, {});
+    const chip = () => el.querySelector('[data-focus-id="youtube.skipButtonSteps.30"]');
+    expect(chip().disabled).toBe(true);
+
+    await NS.setOption("youtube", "skipButtons", true);
+    ({ state } = await NS.ui.load());
+    el = NS.ui.platformSection(yt, state, true, {});
+    expect(chip().disabled).toBe(false);
+    chip().click();
+    await flush();
+    expect((await api.storage.sync.get("youtube.skipButtonSteps"))["youtube.skipButtonSteps"]).toEqual([30, 300, 600]);
+  });
+
+  it("formats sizes", () => {
+    expect([5, 60, 300, 3600].map(NS.ui.formatSeconds)).toEqual(["5 s", "1 min", "5 min", "1 h"]);
   });
 });
 

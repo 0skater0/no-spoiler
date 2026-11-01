@@ -64,7 +64,19 @@ export function validate(meta, folder) {
     if (keys.has(o.key)) fail(`duplicate option key "${o.key}"`);
     keys.add(o.key);
     if (typeof o.label !== "string" || !o.label) fail(`option "${o.key}" has no label`);
-    if (typeof o.default !== "boolean") fail(`option "${o.key}" default must be boolean`);
+    const type = o.type || "boolean";
+    if (type === "boolean") {
+      if (typeof o.default !== "boolean") fail(`option "${o.key}" default must be boolean`);
+    } else if (type === "steps") {
+      const ints = (a) => Array.isArray(a) && a.every((n) => Number.isInteger(n) && n > 0);
+      if (!ints(o.choices) || !o.choices.length) fail(`option "${o.key}" needs choices (positive seconds)`);
+      if (!ints(o.default) || !o.default.every((n) => o.choices.includes(n))) fail(`option "${o.key}" default must be a subset of choices`);
+    } else {
+      fail(`option "${o.key}" has unknown type "${type}"`);
+    }
+    if (o.dependsOn !== undefined && !meta.options.some((x) => x.key === o.dependsOn && (x.type || "boolean") === "boolean")) {
+      fail(`option "${o.key}" depends on unknown boolean option "${o.dependsOn}"`);
+    }
   }
 }
 

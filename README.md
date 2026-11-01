@@ -36,8 +36,8 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide progress bar and chapter title | on |
 | Hide end screen and end cards | on |
 | Turn off autoplay (switched back on when protection is turned off) | on |
-| Skip buttons -10, -5, +5, +10 minutes next to the play button | off |
-| Seek controls in the middle of the video on hover (-10m, -1m, -10s, play/pause, +10s, +1m, +10m) | off |
+| Jump buttons in the player bar, next to play (sizes selectable, default 5 and 10 min) | off |
+| Jump buttons in the middle of the video on hover (sizes selectable, default 1, 5 and 10 min) | off |
 | Hide comments | on |
 | Hide description and chapter list | on |
 | Hide recommendations next to the video | on |
@@ -52,13 +52,13 @@ Chrome on `chrome://extensions/shortcuts`.
 | Option | Default |
 |---|---|
 | Hide current time and duration in the player | on |
-| Hide progress in the seek bar | on |
+| Hide seek bar | on |
 | Hide seek bar hover preview | on |
 | Hide recommendations at the end of a video | on |
-| Skip buttons next to play on videos (-10, -5, +5, +10 min) | off |
-| Seek controls in the middle of videos on hover | off |
-| Hide chat replay on videos | on |
-| Hide chat on live streams | off |
+| Jump buttons in the player bar on videos (sizes selectable) | off |
+| Jump buttons in the middle of videos on hover (sizes selectable) | off |
+| Collapse chat replay on videos (Twitch's own collapse button) | on |
+| Collapse chat on live streams | off |
 | Blur video and clip thumbnails | on |
 | Blur live stream thumbnails | off |
 | Hide video and clip lengths | on |
@@ -193,6 +193,9 @@ The extension makes no network requests.
      popup; a required permission would make Firefox hold the update for all
      existing users until they accept it.
    - Option keys are camelCase, `enabled` is reserved.
+   - Options are switches by default. `"type": "steps"` with `"choices"`
+     (seconds) and a `"default"` subset renders a picker for jump sizes.
+     `"dependsOn": "<switch key>"` greys an option out while that switch is off.
 
 2. Create `src/platforms/<id>/content.css`. Scope every rule to the classes:
 

@@ -98,6 +98,9 @@ describe("platform.json validation", () => {
     [{ options: [{ key: "a", label: "A", default: true }, { key: "a", label: "A", default: true }] }, "duplicate"],
     [{ options: [{ key: "enabled", label: "A", default: true }] }, "reserved"],
     [{ options: [{ key: "a", label: "A", default: "yes" }] }, "boolean"],
+    [{ options: [{ key: "a", label: "A", type: "steps", choices: [10, 60], default: [30] }] }, "subset"],
+    [{ options: [{ key: "a", label: "A", type: "steps", choices: [10], default: [10], dependsOn: "b" }] }, "depends on"],
+    [{ options: [{ key: "a", label: "A", type: "colour", default: 1 }] }, "unknown type"],
   ])("rejects %o", (patch, msg) => {
     expect(() => validate({ ...ok, ...patch }, "x")).toThrow(msg);
   });

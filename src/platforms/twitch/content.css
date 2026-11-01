@@ -16,18 +16,10 @@ html.ns-on.ns-twitch-hidePlayerTime .vod-seekbar-time-labels {
   display: none !important;
 }
 
-/*
- * Player: seek bar progress. The seek bar is
- *   [data-a-target="player-seekbar"] > .seekbar-bar > span[seekbar-segment__segment]...
- *                                                    > span > div.seekbar-thumb[role=slider]
- * The played/buffered segments and the knob become invisible; the bar itself
- * stays as a neutral track, and clicking it still seeks.
- */
-html.ns-on.ns-twitch-hideSeekbarProgress [data-a-target="player-seekbar"] [data-test-selector="seekbar-segment__segment"],
-html.ns-on.ns-twitch-hideSeekbarProgress [data-a-target="player-seekbar"] .seekbar-segment,
-html.ns-on.ns-twitch-hideSeekbarProgress [data-a-target="player-seekbar"] [role="slider"],
-html.ns-on.ns-twitch-hideSeekbarProgress [data-a-target="player-seekbar"] .seekbar-thumb {
-  opacity: 0 !important;
+/* Player: the whole seek bar (use jump buttons to navigate) */
+html.ns-on.ns-twitch-hideSeekbar [data-a-target="player-seekbar"],
+html.ns-on.ns-twitch-hideSeekbar .seekbar-interaction-area {
+  display: none !important;
 }
 
 /* Player: preview image and time while hovering the seek bar */
@@ -42,22 +34,6 @@ html.ns-on.ns-twitch-hideEndRecommendations [data-a-target="player-overlay-video
 html.ns-on.ns-twitch-hideEndRecommendations [data-test-selector="video-player__recommendations"],
 html.ns-on.ns-twitch-hideEndRecommendations [data-a-target="autoplay-countdown"],
 html.ns-on.ns-twitch-hideEndRecommendations .autoplay-vod__content-container {
-  display: none !important;
-}
-
-/*
- * Chat. Live streams and videos share the right column
- * ([data-a-target="right-column-chat-bar"] > ... aside > .chat-shell);
- * hiding the whole column lets the player use the width.
- */
-html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) [data-a-target="right-column-chat-bar"],
-html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) .chat-shell {
-  display: none !important;
-}
-
-html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] [data-a-target="right-column-chat-bar"],
-html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] .chat-shell,
-html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] .video-chat {
   display: none !important;
 }
 

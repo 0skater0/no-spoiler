@@ -8,7 +8,7 @@ beforeEach(async () => {
 });
 
 const FIXTURES = ["youtube-watch.html", "youtube-home.html"];
-const JS_ONLY = ["disableAutoplay", "skipButtons", "overlayControls", "hideTooltips"];
+const JS_ONLY = ["disableAutoplay", "skipButtons", "overlayControls", "hideTooltips", "skipButtonSteps", "overlaySteps"];
 
 function ctx(overrides = {}, optionOverrides = {}) {
   const state = NS.defaultState();
@@ -90,6 +90,15 @@ describe("YouTube seek controls", () => {
     expect(video.currentTime).toBe(400);
   });
 
+  it("rebuilds the skip bar when the jump sizes change", () => {
+    mountFixture("youtube-watch.html");
+    NS.hooks.youtube.update(ctx({}, { skipButtons: true }));
+    NS.hooks.youtube.update(ctx({}, { skipButtons: true, skipButtonSteps: [30, 3600] }));
+    const bars = document.querySelectorAll(".ns-skip-controls");
+    expect(bars).toHaveLength(1);
+    expect([...bars[0].querySelectorAll("button")].map((b) => b.textContent)).toEqual(["\u22121h", "\u221230s", "+30s", "+1h"]);
+  });
+
   it("adds one centre overlay to the main player and removes it", () => {
     mountFixture("youtube-watch.html");
     const c = ctx({}, { overlayControls: true });
@@ -98,7 +107,7 @@ describe("YouTube seek controls", () => {
     const overlays = document.querySelectorAll('#movie_player > [data-ns-player="overlay"]');
     expect(overlays).toHaveLength(1);
     expect([...overlays[0].querySelectorAll("button")].map((b) => b.textContent)).toEqual([
-      "\u221210m", "\u22121m", "\u221210s", "\u23EF", "+10s", "+1m", "+10m",
+      "\u221210m", "\u22125m", "\u22121m", "\u23EF", "+1m", "+5m", "+10m",
     ]);
     NS.hooks.youtube.update(ctx({}, { overlayControls: false }));
     expect(document.querySelector('[data-ns-player="overlay"]')).toBeNull();

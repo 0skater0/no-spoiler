@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { fixture, loadExtension, mountFixture } from "./helpers/env.js";
+import { fixture, flush, loadExtension, mountFixture } from "./helpers/env.js";
 import { checkFixture, coveredOptions, render } from "./helpers/fixture-check.js";
 
 let NS;
@@ -7,7 +7,7 @@ beforeEach(async () => {
   ({ NS } = await loadExtension(["platforms/twitch/content.js"]));
 });
 
-const JS_ONLY = ["hideTooltips", "skipButtons", "overlayControls"];
+const JS_ONLY = ["hideTooltips", "skipButtons", "overlayControls", "hideVodChatReplay", "hideLiveChat", "skipButtonSteps", "overlaySteps"];
 
 function ctx(overrides = {}, optionOverrides = {}) {
   const state = NS.defaultState();
@@ -30,11 +30,6 @@ describe("Twitch stylesheet", () => {
 
   it("hides what each option promises on a live channel", () => {
     checkFixture(NS, "twitch", "twitch-live.html", { url: "https://www.twitch.tv/somechannel" });
-  });
-
-  it("keeps the chat replay rule and the live chat rule apart", () => {
-    const hidden = render(NS, "twitch", "twitch-live.html", ["hideLiveChat"], { url: "https://www.twitch.tv/videos/1" });
-    expect(hidden(document.querySelector(".chat-shell"))).toBe(false);
   });
 
   it("covers every CSS option with a fixture expectation", () => {
@@ -82,13 +77,6 @@ describe("Twitch durations and seek bar", () => {
     const marked = [...document.querySelectorAll("[data-ns-duration]")].map((e) => e.textContent.trim());
     expect(marked.sort()).toEqual(["0:30", "3:12:45"]);
     expect(document.querySelector(".live-time [data-ns-duration]")).toBeNull();
-  });
-
-  it("hides seek bar progress and knob but keeps the bar clickable", () => {
-    const hidden = render(NS, "twitch", "twitch-vod.html", ["hideSeekbarProgress"], { url: "https://www.twitch.tv/videos/1" });
-    expect(hidden(document.querySelector('[data-a-target="player-seekbar"]'))).toBe(false);
-    expect(hidden(document.querySelector(".seekbar-bar"))).toBe(false);
-    expect(hidden(document.querySelector(".seekbar-thumb"))).toBe(true);
   });
 
   it("removes duration marks when switched off", () => {
@@ -144,5 +132,54 @@ describe("Twitch seek controls", () => {
     expect(video.currentTime).toBe(160);
     buttons.find((b) => b.textContent === "\u221210m").click();
     expect(video.currentTime).toBe(0);
+  });
+});
+
+describe("Twitch chat", () => {
+  // Simulate Twitch: the toggle button flips the expanded class.
+  function wireChat() {
+    document.querySelector('[data-a-target="right-column__toggle-collapse-btn"]').addEventListener("click", () => {
+      document.querySelector(".channel-root__right-column").classList.toggle("channel-root__right-column--expanded");
+    });
+  }
+  const expanded = () => document.querySelector(".channel-root__right-column--expanded") !== null;
+
+  it("collapses the chat replay with Twitch's button and expands it again", async () => {
+    mountFixture("twitch-vod.html");
+    wireChat();
+    NS.hooks.twitch.update(ctx({ url: "https://www.twitch.tv/videos/1" }));
+    expect(expanded()).toBe(false);
+    NS.hooks.twitch.update(ctx({ url: "https://www.twitch.tv/videos/1", active: false }));
+    await flush();
+    expect(expanded()).toBe(true);
+  });
+
+  it("does not fight the user who opens the chat again", () => {
+    mountFixture("twitch-vod.html");
+    wireChat();
+    const c = ctx({ url: "https://www.twitch.tv/videos/1" });
+    NS.hooks.twitch.update(c);
+    document.querySelector('[data-a-target="right-column__toggle-collapse-btn"]').click(); // user opens it
+    NS.hooks.twitch.update({ ...c, reason: "mutation" });
+    expect(expanded()).toBe(true);
+  });
+
+  it("leaves live chat open unless that option is on", () => {
+    mountFixture("twitch-live.html");
+    wireChat();
+    NS.hooks.twitch.update(ctx({ url: "https://www.twitch.tv/somechannel" }));
+    expect(expanded()).toBe(true);
+    NS.hooks.twitch.update(ctx({ url: "https://www.twitch.tv/somechannel" }, { hideLiveChat: true }));
+    expect(expanded()).toBe(false);
+  });
+
+  it("leaves a chat alone that the user had collapsed", async () => {
+    mountFixture("twitch-live.html");
+    wireChat();
+    document.querySelector('[data-a-target="right-column__toggle-collapse-btn"]').click();
+    NS.hooks.twitch.update(ctx({ url: "https://www.twitch.tv/somechannel" }, { hideLiveChat: true }));
+    NS.hooks.twitch.update(ctx({ url: "https://www.twitch.tv/somechannel", active: false }));
+    await flush();
+    expect(expanded()).toBe(false);
   });
 });

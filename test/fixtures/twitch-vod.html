@@ -21,13 +21,13 @@
               <p data-a-target="player-seekbar-current-time" data-expect-hidden="hidePlayerTime">03:02:12</p>
               <p data-a-target="player-seekbar-duration" data-a-value="39995.983" data-expect-hidden="hidePlayerTime">11:06:35</p>
             </div>
-            <div data-test-selector="seekbar-interaction-area__interactionArea" data-a-target="player-seekbar" class="seekbar-interaction-area" data-expect-visible>
-              <div class="seekbar-bar" data-expect-visible>
-                <span data-test-selector="seekbar-segment__segment" class="seekbar-segment" style="width: 27%" data-expect-hidden="hideSeekbarProgress"></span>
-                <span data-test-selector="seekbar-segment__segment" class="seekbar-segment" style="width: 30%" data-expect-hidden="hideSeekbarProgress"></span>
+            <div data-test-selector="seekbar-interaction-area__interactionArea" data-a-target="player-seekbar" class="seekbar-interaction-area" data-expect-hidden="hideSeekbar">
+              <div class="seekbar-bar">
+                <span data-test-selector="seekbar-segment__segment" class="seekbar-segment" style="width: 27%"></span>
+                <span data-test-selector="seekbar-segment__segment" class="seekbar-segment" style="width: 30%"></span>
                 <span>
                   <div class="tw-transition">
-                    <div class="seekbar-thumb" role="slider" tabindex="0" data-expect-hidden="hideSeekbarProgress"><p></p></div>
+                    <div class="seekbar-thumb" role="slider" tabindex="0"><p></p></div>
                   </div>
                 </span>
               </div>
@@ -59,12 +59,12 @@
       <h2 data-a-target="stream-title" title="Grand final, team A wins" data-expect-hidden="maskTitles">Grand final, team A wins</h2>
     </div>
   </main>
-  <div class="right-column right-column--beside" role="complementary" data-a-target="right-column-chat-bar" data-expect-hidden="hideVodChatReplay">
+  <div class="right-column right-column--beside" role="complementary" data-a-target="right-column-chat-bar">
     <button data-a-target="right-column__toggle-collapse-btn" aria-label="Chat einklappen"></button>
     <aside id="live-page-chat" aria-label="Stream-Chat">
-      <div class="channel-root__right-column">
-        <div class="chat-shell chat-shell__expanded" data-expect-hidden="hideVodChatReplay">
-          <section class="video-chat" data-expect-hidden="hideVodChatReplay">GG</section>
+      <div class="channel-root__right-column channel-root__right-column--expanded">
+        <div class="chat-shell chat-shell__expanded">
+          <section class="video-chat">GG</section>
         </div>
       </div>
     </aside>

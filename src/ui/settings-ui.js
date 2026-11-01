@@ -57,13 +57,53 @@
     });
   };
 
+  /** "10 s", "5 min", "1 h" */
+  ui.formatSeconds = function (sec) {
+    if (sec >= 3600 && sec % 3600 === 0) return `${sec / 3600} h`;
+    if (sec >= 60 && sec % 60 === 0) return `${sec / 60} min`;
+    return `${sec} s`;
+  };
+
+  /**
+   * Row of toggle chips for a "steps" option: the user picks which jump sizes
+   * appear (each one backwards and forwards).
+   */
+  ui.stepPicker = function (platform, option, selected, disabled) {
+    const id = `${platform.id}.${option.key}`;
+    const chips = option.choices.map((sec) => {
+      const on = selected.includes(sec);
+      return h(
+        "button",
+        {
+          type: "button",
+          class: `ns-chip${on ? " is-on" : ""}`,
+          "aria-pressed": on ? "true" : "false",
+          "data-focus-id": `${id}.${sec}`,
+          disabled,
+          onclick: () => {
+            const next = on ? selected.filter((n) => n !== sec) : [...selected, sec].sort((a, b) => a - b);
+            NS.setOption(platform.id, option.key, next);
+          },
+        },
+        ui.formatSeconds(sec),
+      );
+    });
+    return h(
+      "div",
+      { class: `ns-steps${disabled ? " is-disabled" : ""}`, role: "group", "aria-label": option.label },
+      h("span", { class: "ns-steps__label" }, option.label),
+      h("div", { class: "ns-steps__chips" }, chips),
+    );
+  };
+
   /** "8 of 11 hidden" style summary for collapsed rows. */
   ui.summary = function (platform, state, access) {
     if (!access) return "No access yet";
     const ps = state.platforms[platform.id];
     if (!ps.enabled) return "Off";
-    const on = platform.options.filter((o) => ps.options[o.key]).length;
-    return `${on} of ${platform.options.length} on`;
+    const booleans = platform.options.filter((o) => NS.optionType(o) === "boolean");
+    const on = booleans.filter((o) => ps.options[o.key]).length;
+    return `${on} of ${booleans.length} on`;
   };
 
   function groupOptions(platform) {
@@ -104,15 +144,17 @@
           "fieldset",
           { class: "ns-group" },
           h("legend", {}, group),
-          options.map((o) =>
-            ui.toggle({
+          options.map((o) => {
+            const off = disabled || (o.dependsOn !== undefined && !ps.options[o.dependsOn]);
+            if (NS.optionType(o) === "steps") return ui.stepPicker(platform, o, ps.options[o.key], off);
+            return ui.toggle({
               id: `${platform.id}.${o.key}`,
               label: o.label,
               checked: ps.options[o.key],
-              disabled,
+              disabled: off,
               onChange: (v) => NS.setOption(platform.id, o.key, v),
-            }),
-          ),
+            });
+          }),
         ),
       );
     }

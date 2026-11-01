@@ -284,3 +284,51 @@ kbd {
   border-radius: 4px;
   font: 12px ui-monospace, monospace;
 }
+
+/* Step picker (jump sizes) */
+.ns-steps {
+  padding: 4px 0 8px;
+}
+
+.ns-steps.is-disabled {
+  opacity: 0.55;
+}
+
+.ns-steps__label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--ns-muted);
+}
+
+.ns-steps__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ns-chip {
+  padding: 3px 10px;
+  border: 1px solid var(--ns-border);
+  border-radius: 999px;
+  background: var(--ns-bg);
+  color: var(--ns-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.ns-chip.is-on {
+  border-color: var(--ns-accent);
+  background: var(--ns-accent);
+  color: var(--ns-accent-text);
+}
+
+.ns-chip:disabled {
+  cursor: default;
+}
+
+.ns-chip:focus-visible {
+  outline: 2px solid var(--ns-focus);
+  outline-offset: 1px;
+}

@@ -4,6 +4,7 @@
  * - Marks durations on cards by their text, and keeps non-duration stats visible.
  * - Moves title tooltips away and back.
  * - Inserts skip buttons and the centre overlay on videos and clips.
+ * - Collapses the chat column with Twitch's own button.
  */
 "use strict";
 
@@ -23,6 +24,8 @@
     cardStats: [".tw-media-card-stat"],
     videoPlayer: ['[data-a-target="video-player"]'],
     playButton: ['[data-a-target="player-play-pause-button"]'],
+    chatToggle: ['[data-a-target="right-column__toggle-collapse-btn"]'],
+    chatExpanded: [".channel-root__right-column--expanded"],
     tooltips: [
       '[data-a-target="preview-card-title-link"][title]',
       '[data-a-target="preview-card-title-link"] [title]',
@@ -81,15 +84,49 @@
     return dom.queryAll(doc, SEL.videoPlayer).filter((p) => p.getAttribute("data-a-player-type") !== "frontpage");
   }
 
-  function ensureSkipButtons(doc) {
+  function ensureSkipButtons(doc, amounts) {
     for (const container of seekablePlayers(doc)) {
       const playBtn = dom.queryFirst(container, SEL.playButton);
-      if (playBtn) NS.player.ensureSkipBar(doc, playBtn, videoOf(container));
+      if (playBtn) NS.player.ensureSkipBar(doc, playBtn, videoOf(container), amounts);
     }
   }
 
-  function ensureOverlay(doc) {
-    for (const container of seekablePlayers(doc)) NS.player.ensureOverlay(doc, container, videoOf(container));
+  function ensureOverlay(doc, amounts) {
+    for (const container of seekablePlayers(doc)) NS.player.ensureOverlay(doc, container, videoOf(container), amounts);
+  }
+
+  /* -------------------------------- chat ------------------------------- */
+
+  const CHAT_RESTORE_KEY = "twitch.chatRestore";
+  let chatPending = true;
+
+  /**
+   * Collapses the chat column with Twitch's own button instead of hiding it,
+   * so the user can open it again. Remembers (storage.local, any tab) that
+   * the extension collapsed it, and only then expands it again.
+   * Returns false while the button is not rendered yet.
+   */
+  function reconcileChat(ctx, page) {
+    const doc = ctx.document;
+    const button = dom.queryFirst(doc, SEL.chatToggle);
+    if (!button) return false;
+    const expanded = Boolean(dom.queryFirst(doc, SEL.chatExpanded));
+    const want = ctx.active && (page === "vod" ? ctx.options.hideVodChatReplay : ctx.options.hideLiveChat);
+    const storage = NS.api.storage.local;
+
+    if (want) {
+      if (expanded) {
+        button.click();
+        storage.set({ [CHAT_RESTORE_KEY]: true });
+      }
+      return true;
+    }
+    storage.get(CHAT_RESTORE_KEY).then((data) => {
+      if (!data[CHAT_RESTORE_KEY]) return;
+      if (!dom.queryFirst(doc, SEL.chatExpanded)) dom.queryFirst(doc, SEL.chatToggle)?.click();
+      storage.remove(CHAT_RESTORE_KEY);
+    });
+    return true;
   }
 
   /* -------------------------------- hook ------------------------------- */
@@ -110,11 +147,14 @@
 
       // Seeking only makes sense on videos and clips.
       const seekable = page === "vod" || page === "clip";
-      if (ctx.active && seekable && opts.skipButtons) ensureSkipButtons(doc);
+      if (ctx.active && seekable && opts.skipButtons) ensureSkipButtons(doc, opts.skipButtonSteps);
       else if (isState || ctx.reason === "navigate") NS.player.remove(doc, "skip-bar");
 
-      if (ctx.active && seekable && opts.overlayControls) ensureOverlay(doc);
+      if (ctx.active && seekable && opts.overlayControls) ensureOverlay(doc, opts.overlaySteps);
       else if (isState || ctx.reason === "navigate") NS.player.remove(doc, "overlay");
+
+      if (isState || ctx.reason === "navigate") chatPending = true;
+      if (chatPending && reconcileChat(ctx, page)) chatPending = false;
 
       if (ctx.active && opts.hideTooltips) dom.stashTitles(doc, SEL.tooltips);
       else if (isState) dom.restoreTitles(doc);
@@ -122,5 +162,5 @@
   });
 
   // Exposed for tests.
-  NS.twitch = { SEL, pageType, markDurations, ensureSkipButtons, ensureOverlay };
+  NS.twitch = { SEL, pageType, markDurations, ensureSkipButtons, ensureOverlay, CHAT_RESTORE_KEY };
 })(globalThis);

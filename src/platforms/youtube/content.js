@@ -60,17 +60,17 @@
   const videoOf = (playerEl) => () => playerEl.querySelector("video");
 
   /** Idempotent: at most one skip bar per control bar. */
-  function ensureSkipButtons(doc) {
+  function ensureSkipButtons(doc, amounts) {
     for (const playBtn of dom.queryAll(doc, SEL.playButton)) {
       const playerEl = playBtn.closest(".html5-video-player");
-      if (playerEl) NS.player.ensureSkipBar(doc, playBtn, videoOf(playerEl));
+      if (playerEl) NS.player.ensureSkipBar(doc, playBtn, videoOf(playerEl), amounts);
     }
   }
 
   /** Idempotent: at most one overlay per player. */
-  function ensureOverlay(doc) {
+  function ensureOverlay(doc, amounts) {
     for (const playerEl of dom.queryAll(doc, SEL.player)) {
-      if (playerEl.querySelector(".ytp-play-button")) NS.player.ensureOverlay(doc, playerEl, videoOf(playerEl));
+      if (playerEl.querySelector(".ytp-play-button")) NS.player.ensureOverlay(doc, playerEl, videoOf(playerEl), amounts);
     }
   }
 
@@ -144,10 +144,10 @@
       if (ctx.active && opts.hideThumbnailDurations) markBadges(doc);
       else if (ctx.reason === "state") unmarkBadges(doc);
 
-      if (ctx.active && opts.skipButtons) ensureSkipButtons(doc);
+      if (ctx.active && opts.skipButtons) ensureSkipButtons(doc, opts.skipButtonSteps);
       else if (ctx.reason === "state") NS.player.remove(doc, "skip-bar");
 
-      if (ctx.active && opts.overlayControls) ensureOverlay(doc);
+      if (ctx.active && opts.overlayControls) ensureOverlay(doc, opts.overlaySteps);
       else if (ctx.reason === "state") NS.player.remove(doc, "overlay");
 
       if (ctx.active && opts.maskTitles) maskTabTitle(doc);

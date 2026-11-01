@@ -73,12 +73,22 @@
     return NS.platforms.find((p) => NS.urlMatches(url, p.matches)) || null;
   };
 
+  /** Option types: "boolean" (default) and "steps" (a subset of `choices`, in seconds). */
+  NS.optionType = (option) => option.type || "boolean";
+
+  NS.isValidOptionValue = function (option, value) {
+    if (NS.optionType(option) === "steps") {
+      return Array.isArray(value) && value.every((n) => option.choices.includes(n));
+    }
+    return typeof value === "boolean";
+  };
+
   /** Settings with every default applied. */
   NS.defaultState = function () {
     const state = { active: true, platforms: {} };
     for (const p of NS.platforms) {
       const options = {};
-      for (const o of p.options) options[o.key] = o.default;
+      for (const o of p.options) options[o.key] = Array.isArray(o.default) ? [...o.default] : o.default;
       state.platforms[p.id] = { enabled: true, options };
     }
     return state;
@@ -99,7 +109,7 @@
       if (typeof enabled === "boolean") ps.enabled = enabled;
       for (const o of p.options) {
         const v = syncData[NS.optionKey(p.id, o.key)];
-        if (typeof v === "boolean") ps.options[o.key] = v;
+        if (NS.isValidOptionValue(o, v)) ps.options[o.key] = Array.isArray(v) ? [...v] : v;
       }
     }
     return state;
@@ -116,7 +126,7 @@
     const classes = [NS.ACTIVE_CLASS];
     const opts = state.platforms[platform.id].options;
     for (const o of platform.options) {
-      if (opts[o.key]) classes.push(NS.optionClass(platform.id, o.key));
+      if (NS.optionType(o) === "boolean" && opts[o.key]) classes.push(NS.optionClass(platform.id, o.key));
     }
     return classes;
   };

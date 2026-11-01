@@ -62,6 +62,12 @@ describe("state", () => {
     expect(s.platforms.youtube.options.hideChat).toBe(true);
   });
 
+  it("accepts step lists only from the allowed choices", () => {
+    const s = NS.stateFromStorage({ "youtube.skipButtonSteps": [30, 600], "youtube.overlaySteps": [7] }, {});
+    expect(s.platforms.youtube.options.skipButtonSteps).toEqual([30, 600]);
+    expect(s.platforms.youtube.options.overlaySteps).toEqual([60, 300, 600]);
+  });
+
   it("computes html classes", () => {
     const yt = NS.getPlatform("youtube");
     const s = NS.defaultState();

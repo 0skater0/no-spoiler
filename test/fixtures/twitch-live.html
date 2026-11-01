@@ -14,9 +14,12 @@
     </div>
   </main>
   <!-- Right column as on the video page (same component) -->
-  <div class="right-column right-column--beside" role="complementary" data-a-target="right-column-chat-bar" data-expect-hidden="hideLiveChat">
+  <div class="right-column right-column--beside" role="complementary" data-a-target="right-column-chat-bar">
+    <button data-a-target="right-column__toggle-collapse-btn" aria-label="Chat einklappen"></button>
     <aside id="live-page-chat" aria-label="Stream-Chat">
-      <div class="chat-shell chat-shell__expanded" data-expect-hidden="hideLiveChat">Chat</div>
+      <div class="channel-root__right-column channel-root__right-column--expanded">
+        <div class="chat-shell chat-shell__expanded">Chat</div>
+      </div>
     </aside>
   </div>
 </div>

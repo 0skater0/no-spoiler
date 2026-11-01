@@ -5,7 +5,9 @@ import { mountFixture } from "./env.js";
 
 function ctxFor(NS, platform, enabledKeys, url) {
   const state = NS.defaultState();
-  for (const o of platform.options) state.platforms[platform.id].options[o.key] = enabledKeys.includes(o.key);
+  for (const o of platform.options) {
+    if (NS.optionType(o) === "boolean") state.platforms[platform.id].options[o.key] = enabledKeys.includes(o.key);
+  }
   return {
     reason: "state",
     active: true,
@@ -37,7 +39,7 @@ const describeEl = (el) => el.outerHTML.slice(0, 120);
 /** Runs every expectation of a fixture for every option of the platform. */
 export function checkFixture(NS, platformId, fixtureName, opts = {}) {
   const platform = NS.getPlatform(platformId);
-  const keys = platform.options.map((o) => o.key);
+  const keys = platform.options.filter((o) => NS.optionType(o) === "boolean").map((o) => o.key);
 
   for (const key of keys) {
     const hidden = render(NS, platformId, fixtureName, [key], opts);

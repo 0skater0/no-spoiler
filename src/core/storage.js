@@ -119,7 +119,7 @@
   NS.setPlatformEnabled = (platformId, value) =>
     NS.api.storage.sync.set({ [NS.enabledKey(platformId)]: Boolean(value) });
   NS.setOption = (platformId, optionKey, value) =>
-    NS.api.storage.sync.set({ [NS.optionKey(platformId, optionKey)]: Boolean(value) });
+    NS.api.storage.sync.set({ [NS.optionKey(platformId, optionKey)]: Array.isArray(value) ? [...value] : Boolean(value) });
 
   /** Removes all stored values of a platform so defaults apply again. */
   NS.resetPlatform = function (platformId) {
