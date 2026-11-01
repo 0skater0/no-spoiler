@@ -1,0 +1,64 @@
+<ytd-app>
+  <ytd-rich-grid-renderer>
+    <!-- Older layout: ytd-thumbnail with time status overlay -->
+    <ytd-rich-item-renderer>
+      <ytd-thumbnail>
+        <a id="thumbnail" href="/watch?v=a"><img data-expect-visible /></a>
+        <div id="overlays">
+          <ytd-thumbnail-overlay-time-status-renderer overlay-style="DEFAULT" data-expect-hidden="hideThumbnailDurations">
+            <badge-shape class="badge-shape-wiz"><div class="badge-shape-wiz__text">12:34</div></badge-shape>
+          </ytd-thumbnail-overlay-time-status-renderer>
+          <ytd-thumbnail-overlay-resume-playback-renderer data-expect-hidden="hideWatchProgress">
+            <div id="progress" style="width: 40%"></div>
+          </ytd-thumbnail-overlay-resume-playback-renderer>
+        </div>
+      </ytd-thumbnail>
+      <div id="details" data-expect-visible><a id="video-title">A video</a></div>
+    </ytd-rich-item-renderer>
+
+    <ytd-rich-item-renderer>
+      <ytd-thumbnail>
+        <a id="thumbnail" href="/watch?v=b"><img /></a>
+        <div id="overlays">
+          <ytd-thumbnail-overlay-time-status-renderer overlay-style="LIVE" data-expect-visible>
+            <badge-shape class="badge-shape-wiz"><div class="badge-shape-wiz__text">LIVE</div></badge-shape>
+          </ytd-thumbnail-overlay-time-status-renderer>
+        </div>
+      </ytd-thumbnail>
+    </ytd-rich-item-renderer>
+
+    <!-- Current layout: lockup view model -->
+    <ytd-rich-item-renderer>
+      <yt-lockup-view-model>
+        <a class="yt-lockup-view-model__content-image" href="/watch?v=c">
+          <yt-thumbnail-view-model>
+            <div class="yt-thumbnail-view-model__image"><img data-expect-visible /></div>
+            <yt-thumbnail-overlay-badge-view-model>
+              <yt-thumbnail-badge-view-model data-expect-hidden="hideThumbnailDurations">
+                <badge-shape class="yt-badge-shape"><div class="yt-badge-shape__text">1:02:03</div></badge-shape>
+              </yt-thumbnail-badge-view-model>
+            </yt-thumbnail-overlay-badge-view-model>
+            <yt-thumbnail-overlay-progress-bar-view-model data-expect-hidden="hideWatchProgress">
+              <div class="ytThumbnailOverlayProgressBarHost"></div>
+            </yt-thumbnail-overlay-progress-bar-view-model>
+          </yt-thumbnail-view-model>
+        </a>
+        <div class="yt-lockup-view-model__metadata" data-expect-visible>Another video</div>
+      </yt-lockup-view-model>
+    </ytd-rich-item-renderer>
+
+    <ytd-rich-item-renderer>
+      <yt-lockup-view-model>
+        <a class="yt-lockup-view-model__content-image" href="/watch?v=d">
+          <yt-thumbnail-view-model>
+            <yt-thumbnail-overlay-badge-view-model>
+              <yt-thumbnail-badge-view-model data-expect-keep>
+                <badge-shape class="yt-badge-shape"><div class="yt-badge-shape__text">LIVE</div></badge-shape>
+              </yt-thumbnail-badge-view-model>
+            </yt-thumbnail-overlay-badge-view-model>
+          </yt-thumbnail-view-model>
+        </a>
+      </yt-lockup-view-model>
+    </ytd-rich-item-renderer>
+  </ytd-rich-grid-renderer>
+</ytd-app>

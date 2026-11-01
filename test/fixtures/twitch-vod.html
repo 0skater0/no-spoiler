@@ -1,0 +1,32 @@
+<div id="root">
+  <main>
+    <div data-a-target="video-player" class="video-player">
+      <video></video>
+      <div data-a-target="player-overlay-video-recommendations" data-expect-hidden="hideEndRecommendations">
+        <a href="/videos/222">Next video</a>
+      </div>
+      <div class="player-controls">
+        <div class="seekbar-wrapper">
+          <p data-a-target="player-seekbar-current-time" data-expect-hidden="hidePlayerTime">1:02:03</p>
+          <div data-a-target="player-seekbar" class="seekbar-interaction-area">
+            <div class="seekbar-bar" data-expect-hidden="hideSeekbarProgress">
+              <div class="seekbar-segment" style="width: 63%; background: rgb(169, 112, 255)"></div>
+            </div>
+            <div role="tooltip" data-expect-hidden="hideSeekbarPreview">1:30:00</div>
+          </div>
+          <p data-a-target="player-seekbar-duration" data-expect-hidden="hidePlayerTime">3:12:45</p>
+        </div>
+        <button data-a-target="player-play-pause-button" data-expect-visible></button>
+      </div>
+    </div>
+    <div data-a-target="player-info">
+      <h2 data-a-target="stream-title" title="Grand final, team A wins" data-expect-hidden="maskTitles">Grand final, team A wins</h2>
+      <a data-a-target="player-info-channel" data-expect-visible>channel</a>
+    </div>
+  </main>
+  <aside>
+    <section class="video-chat" data-expect-hidden="hideVodChatReplay">
+      <div class="video-chat__message-list-wrapper">GG</div>
+    </section>
+  </aside>
+</div>

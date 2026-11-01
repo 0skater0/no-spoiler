@@ -1,0 +1,42 @@
+<div id="root">
+  <!-- Video (VOD) card -->
+  <article data-a-target="card-1">
+    <a data-a-target="preview-card-image-link" href="/videos/123456">
+      <div class="tw-aspect"><img class="tw-image" src="vod.jpg" alt="" data-expect-hidden="blurThumbnails" /></div>
+      <video data-expect-hidden="disableCardHoverPreview"></video>
+      <div class="tw-media-card-stat" data-expect-hidden="hideCardDurations"><p>3:12:45</p></div>
+      <div class="tw-media-card-stat" data-expect-keep><p>2 days ago</p></div>
+      <div class="tw-media-card-stat" data-expect-keep><p>12K views</p></div>
+    </a>
+    <a data-a-target="preview-card-title-link" href="/videos/123456" title="Final: team A vs team B">
+      <h3 data-expect-hidden="maskTitles">Final: team A vs team B</h3>
+    </a>
+    <a data-a-target="preview-card-channel-link" href="/somechannel" data-expect-visible>somechannel</a>
+  </article>
+
+  <!-- Clip card with an unknown stat structure (duration found by text) -->
+  <article>
+    <a data-a-target="preview-card-image-link" href="/somechannel/clip/FunnySlug-abc">
+      <img class="tw-image" src="clip.jpg" alt="" data-expect-hidden="blurThumbnails" />
+      <div class="ScMediaCardStatWrapper-x" data-expect-hidden="hideCardDurations"><div class="CoreText-x">0:30</div></div>
+    </a>
+    <a data-a-target="preview-card-title-link" href="/somechannel/clip/FunnySlug-abc" title="Insane clutch">
+      <h3 data-expect-hidden="maskTitles">Insane clutch</h3>
+    </a>
+  </article>
+
+  <!-- Live card -->
+  <article>
+    <a data-a-target="preview-card-image-link" href="/livechannel">
+      <img class="tw-image" src="live.jpg" alt="" data-expect-hidden="blurLiveThumbnails" />
+      <div class="tw-media-card-stat" data-expect-visible><p>1.2K viewers</p></div>
+    </a>
+    <a data-a-target="preview-card-title-link" href="/livechannel" title="Playing now">
+      <h3 data-expect-visible>Playing now</h3>
+    </a>
+  </article>
+
+  <div class="channel-info">
+    <span class="live-time" data-expect-hidden="hideLiveUptime"><p>2:13:07</p></span>
+  </div>
+</div>
