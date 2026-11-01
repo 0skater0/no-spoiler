@@ -7,12 +7,14 @@ import { BROWSERS } from "./build.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const { version } = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8"));
-const webExt = path.join(ROOT, "node_modules", ".bin", "web-ext");
+// Run the JS entry with node directly, so it also works on Windows (no shell shim).
+const webExt = path.join(ROOT, "node_modules", "web-ext", "bin", "web-ext.js");
 
 for (const browser of BROWSERS) {
   execFileSync(
-    webExt,
+    process.execPath,
     [
+      webExt,
       "build",
       "--source-dir", path.join("dist", browser),
       "--artifacts-dir", "dist",
