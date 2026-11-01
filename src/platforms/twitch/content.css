@@ -37,6 +37,20 @@ html.ns-on.ns-twitch-hideEndRecommendations .autoplay-vod__content-container {
   display: none !important;
 }
 
+/*
+ * Chat: content.js keeps the column collapsed with Twitch's own button.
+ * The button is hidden so the chat cannot be opened while the option is on,
+ * and the chat content is hidden until the column has collapsed (no flash).
+ */
+html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] [data-a-target="right-column__toggle-collapse-btn"],
+html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] .right-column__toggle-visibility,
+html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] [data-a-target="right-column-chat-bar"] .chat-shell,
+html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) [data-a-target="right-column__toggle-collapse-btn"],
+html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) .right-column__toggle-visibility,
+html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) [data-a-target="right-column-chat-bar"] .chat-shell {
+  display: none !important;
+}
+
 /* Cards: blur thumbnails of videos and clips */
 html.ns-on.ns-twitch-blurThumbnails a[href*="/videos/"] img,
 html.ns-on.ns-twitch-blurThumbnails a[href*="/clip/"] img,

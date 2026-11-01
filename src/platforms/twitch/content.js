@@ -98,33 +98,38 @@
   /* -------------------------------- chat ------------------------------- */
 
   const CHAT_RESTORE_KEY = "twitch.chatRestore";
-  let chatPending = true;
+  let restorePending = true;
+  let restoreFlagWritten = false;
+
+  const chatWanted = (ctx, page) =>
+    ctx.active && (page === "vod" ? ctx.options.hideVodChatReplay : ctx.options.hideLiveChat);
 
   /**
-   * Collapses the chat column with Twitch's own button instead of hiding it,
-   * so the user can open it again. Remembers (storage.local, any tab) that
-   * the extension collapsed it, and only then expands it again.
-   * Returns false while the button is not rendered yet.
+   * Keeps the chat column collapsed with Twitch's own button while the option
+   * is on (CSS hides the button, so it cannot be opened in between). Runs on
+   * every tick, so a chat opened by Twitch is collapsed again right away.
+   * Remembers in storage.local (any tab) that the extension collapsed it.
    */
-  function reconcileChat(ctx, page) {
-    const doc = ctx.document;
+  function enforceCollapsed(doc) {
+    if (!dom.queryFirst(doc, SEL.chatExpanded)) return;
     const button = dom.queryFirst(doc, SEL.chatToggle);
-    if (!button) return false;
-    const expanded = Boolean(dom.queryFirst(doc, SEL.chatExpanded));
-    const want = ctx.active && (page === "vod" ? ctx.options.hideVodChatReplay : ctx.options.hideLiveChat);
-    const storage = NS.api.storage.local;
-
-    if (want) {
-      if (expanded) {
-        button.click();
-        storage.set({ [CHAT_RESTORE_KEY]: true });
-      }
-      return true;
+    if (!button) return;
+    button.click();
+    if (!restoreFlagWritten) {
+      NS.api.storage.local.set({ [CHAT_RESTORE_KEY]: true });
+      restoreFlagWritten = true;
     }
+  }
+
+  /** Opens the chat again, but only if the extension collapsed it. Returns false until the button exists. */
+  function restoreChat(doc) {
+    if (!dom.queryFirst(doc, SEL.chatToggle)) return false;
+    const storage = NS.api.storage.local;
     storage.get(CHAT_RESTORE_KEY).then((data) => {
       if (!data[CHAT_RESTORE_KEY]) return;
       if (!dom.queryFirst(doc, SEL.chatExpanded)) dom.queryFirst(doc, SEL.chatToggle)?.click();
       storage.remove(CHAT_RESTORE_KEY);
+      restoreFlagWritten = false;
     });
     return true;
   }
@@ -153,8 +158,12 @@
       if (ctx.active && seekable && opts.overlayControls) ensureOverlay(doc, opts.overlaySteps);
       else if (isState || ctx.reason === "navigate") NS.player.remove(doc, "overlay");
 
-      if (isState || ctx.reason === "navigate") chatPending = true;
-      if (chatPending && reconcileChat(ctx, page)) chatPending = false;
+      if (chatWanted(ctx, page)) {
+        enforceCollapsed(doc);
+        restorePending = true;
+      } else if (restorePending && restoreChat(doc)) {
+        restorePending = false;
+      }
 
       if (ctx.active && opts.hideTooltips) dom.stashTitles(doc, SEL.tooltips);
       else if (isState) dom.restoreTitles(doc);

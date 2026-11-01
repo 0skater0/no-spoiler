@@ -154,14 +154,23 @@ describe("Twitch chat", () => {
     expect(expanded()).toBe(true);
   });
 
-  it("does not fight the user who opens the chat again", () => {
+  it("keeps the chat collapsed while the option is on", () => {
     mountFixture("twitch-vod.html");
     wireChat();
     const c = ctx({ url: "https://www.twitch.tv/videos/1" });
     NS.hooks.twitch.update(c);
-    document.querySelector('[data-a-target="right-column__toggle-collapse-btn"]').click(); // user opens it
-    NS.hooks.twitch.update({ ...c, reason: "mutation" });
+    document.querySelector('[data-a-target="right-column__toggle-collapse-btn"]').click(); // Twitch opens it again
     expect(expanded()).toBe(true);
+    NS.hooks.twitch.update({ ...c, reason: "mutation" });
+    expect(expanded()).toBe(false);
+  });
+
+  it("hides the collapse button and the chat content while the option is on", () => {
+    const hidden = render(NS, "twitch", "twitch-vod.html", ["hideVodChatReplay"], { url: "https://www.twitch.tv/videos/1", runJs: true });
+    expect(hidden(document.querySelector('[data-a-target="right-column__toggle-collapse-btn"]'))).toBe(true);
+    expect(hidden(document.querySelector(".chat-shell"))).toBe(true);
+    const live = render(NS, "twitch", "twitch-vod.html", ["hideLiveChat"], { url: "https://www.twitch.tv/videos/1" });
+    expect(live(document.querySelector('[data-a-target="right-column__toggle-collapse-btn"]'))).toBe(false);
   });
 
   it("leaves live chat open unless that option is on", () => {
