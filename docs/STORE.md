@@ -41,8 +41,8 @@ A new item; Chrome has no relation to the Firefox listing.
 3. *Store listing*: texts below, category *Productivity* (or *Entertainment*),
    language English.
 4. Graphics: the 128 px icon is in the package (`icons/on-128.png`). The store
-   needs at least one screenshot of 1280×800 or 640×400 px, optionally a
-   small promo tile of 440×280 px.
+   needs at least one screenshot of 1280×800 or 640×400 px, and a small promo
+   tile of 440×280 px: `docs/store/promo-small-440x280.png`.
 5. *Privacy practices*: single purpose and permission justifications below;
    data usage: no data collected; privacy policy URL:
    `https://github.com/0skater0/no-spoiler/blob/main/PRIVACY.md`.
