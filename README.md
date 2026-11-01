@@ -14,7 +14,7 @@ and adds jump buttons to the player.
 
 Supported sites: **YouTube** and **Twitch**.
 
-![Demo GIF](images/demo.gif)
+![No Spoilers popup with the YouTube settings](docs/store/screenshot-1-popup-1280x800.png)
 
 ## Features
 
