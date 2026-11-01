@@ -1,0 +1,22 @@
+{
+  "id": "twitch",
+  "label": "Twitch",
+  "matches": ["https://*.twitch.tv/*"],
+  "order": 20,
+  "hostAccess": "optional",
+  "contentScript": true,
+  "options": [
+    { "key": "hidePlayerTime", "label": "Hide current time and duration in the player", "default": true, "group": "Player" },
+    { "key": "hideSeekbarProgress", "label": "Hide progress in the seek bar", "default": true, "group": "Player" },
+    { "key": "hideSeekbarPreview", "label": "Hide seek bar hover preview", "default": true, "group": "Player" },
+    { "key": "hideEndRecommendations", "label": "Hide recommendations at the end of a video", "default": true, "group": "Player" },
+    { "key": "hideVodChatReplay", "label": "Hide chat replay on videos", "default": true, "group": "Player" },
+    { "key": "blurThumbnails", "label": "Blur video and clip thumbnails", "default": true, "group": "Cards" },
+    { "key": "blurLiveThumbnails", "label": "Blur live stream thumbnails", "default": false, "group": "Cards" },
+    { "key": "hideCardDurations", "label": "Hide video and clip lengths on cards", "default": true, "group": "Cards" },
+    { "key": "disableCardHoverPreview", "label": "Disable video previews when hovering cards", "default": true, "group": "Cards" },
+    { "key": "maskTitles", "label": "Hide video and clip titles", "default": false, "group": "Titles" },
+    { "key": "hideTooltips", "label": "Hide title tooltips", "default": false, "group": "Titles" },
+    { "key": "hideLiveUptime", "label": "Hide stream uptime", "default": true, "group": "Live" }
+  ]
+}

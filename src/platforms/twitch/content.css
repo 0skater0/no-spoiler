@@ -1,0 +1,128 @@
+/*
+ * Twitch rules. Every rule hangs on html classes set by the content script:
+ *   html.ns-on                        protection active for this platform
+ *   html.ns-twitch-<option>           option switched on
+ *   html[data-ns-page="vod|clip|other"]  page type, set by content.js
+ *
+ * Selector priority: data-a-target, data-test-selector, aria and href
+ * attributes first, class names only as a fallback. Twitch changes class
+ * names often; the attributes are more stable.
+ */
+
+/* Player: current time and duration */
+html.ns-on.ns-twitch-hidePlayerTime [data-a-target="player-seekbar-current-time"],
+html.ns-on.ns-twitch-hidePlayerTime [data-a-target="player-seekbar-duration"] {
+  display: none !important;
+}
+
+/*
+ * Player: seek bar progress.
+ * The content of the seek bar is made invisible (opacity keeps it clickable),
+ * and a neutral track is drawn over it. This does not depend on the colour or
+ * structure of the progress fill and the knob.
+ */
+html.ns-on.ns-twitch-hideSeekbarProgress [data-a-target="player-seekbar"]:not(input) > *,
+html.ns-on.ns-twitch-hideSeekbarProgress [data-ns-seekbar] > * {
+  opacity: 0 !important;
+}
+
+html.ns-on.ns-twitch-hideSeekbarProgress [data-ns-seekbar][data-ns-static] {
+  position: relative !important;
+}
+
+html.ns-on.ns-twitch-hideSeekbarProgress [data-ns-seekbar]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+/* Player: preview thumbnail and time while hovering the seek bar */
+html.ns-on.ns-twitch-hideSeekbarPreview [data-a-target="player-seekbar-preview"],
+html.ns-on.ns-twitch-hideSeekbarPreview [data-test-selector="seekbar-preview"],
+html.ns-on.ns-twitch-hideSeekbarPreview [data-a-target="player-seekbar"] [role="tooltip"],
+html.ns-on.ns-twitch-hideSeekbarPreview .seekbar-preview {
+  display: none !important;
+}
+
+/* Player: recommendations / autoplay countdown at the end of a video */
+html.ns-on.ns-twitch-hideEndRecommendations [data-a-target="player-overlay-video-recommendations"],
+html.ns-on.ns-twitch-hideEndRecommendations [data-test-selector="video-player__recommendations"],
+html.ns-on.ns-twitch-hideEndRecommendations [data-a-target="autoplay-countdown"],
+html.ns-on.ns-twitch-hideEndRecommendations .autoplay-vod__content-container {
+  display: none !important;
+}
+
+/* Chat replay on video pages */
+html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] [data-a-target="video-chat"],
+html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] .video-chat {
+  display: none !important;
+}
+
+/* Cards: blur thumbnails of videos and clips */
+html.ns-on.ns-twitch-blurThumbnails a[href*="/videos/"] img,
+html.ns-on.ns-twitch-blurThumbnails a[href*="/clip/"] img,
+html.ns-on.ns-twitch-blurThumbnails a[href*="clips.twitch.tv/"] img {
+  filter: blur(14px) !important;
+}
+
+/* Cards: blur thumbnails of live streams */
+html.ns-on.ns-twitch-blurLiveThumbnails [data-a-target="preview-card-image-link"]:not([href*="/videos/"]):not([href*="/clip/"]) img {
+  filter: blur(14px) !important;
+}
+
+/*
+ * Cards: lengths of videos and clips.
+ * Fail closed on the known stat badge class (hidden until content.js marks
+ * non-duration stats with data-ns-keep), plus any element content.js marked
+ * as a duration by its text.
+ */
+html.ns-on.ns-twitch-hideCardDurations a[href*="/videos/"] .tw-media-card-stat:not([data-ns-keep]),
+html.ns-on.ns-twitch-hideCardDurations a[href*="/clip/"] .tw-media-card-stat:not([data-ns-keep]),
+html.ns-on.ns-twitch-hideCardDurations [data-ns-duration] {
+  display: none !important;
+}
+
+/* Cards: video previews on hover */
+html.ns-on.ns-twitch-disableCardHoverPreview a[href*="/videos/"] video,
+html.ns-on.ns-twitch-disableCardHoverPreview a[href*="/clip/"] video,
+html.ns-on.ns-twitch-disableCardHoverPreview [data-a-target="preview-card-image-link"] video {
+  display: none !important;
+}
+
+/*
+ * Titles of videos and clips. The text stays in the DOM (Twitch's React
+ * would re-render it anyway); it is shrunk to zero and a placeholder is shown.
+ */
+html.ns-on.ns-twitch-maskTitles a[data-a-target="preview-card-title-link"][href*="/videos/"] :is(h3, h4, p),
+html.ns-on.ns-twitch-maskTitles a[data-a-target="preview-card-title-link"][href*="/clip/"] :is(h3, h4, p),
+html.ns-on.ns-twitch-maskTitles[data-ns-page="vod"] [data-a-target="stream-title"],
+html.ns-on.ns-twitch-maskTitles[data-ns-page="clip"] [data-a-target="stream-title"],
+html.ns-on.ns-twitch-maskTitles[data-ns-page="vod"] [data-a-target="player-info-title"],
+html.ns-on.ns-twitch-maskTitles[data-ns-page="clip"] [data-a-target="player-info-title"] {
+  font-size: 0 !important;
+}
+
+html.ns-on.ns-twitch-maskTitles a[data-a-target="preview-card-title-link"][href*="/videos/"] :is(h3, h4, p)::after,
+html.ns-on.ns-twitch-maskTitles a[data-a-target="preview-card-title-link"][href*="/clip/"] :is(h3, h4, p)::after,
+html.ns-on.ns-twitch-maskTitles[data-ns-page="vod"] [data-a-target="stream-title"]::after,
+html.ns-on.ns-twitch-maskTitles[data-ns-page="clip"] [data-a-target="stream-title"]::after,
+html.ns-on.ns-twitch-maskTitles[data-ns-page="vod"] [data-a-target="player-info-title"]::after,
+html.ns-on.ns-twitch-maskTitles[data-ns-page="clip"] [data-a-target="player-info-title"]::after {
+  content: "Title hidden";
+  font-size: 1.4rem;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* Live: stream uptime */
+html.ns-on.ns-twitch-hideLiveUptime .live-time,
+html.ns-on.ns-twitch-hideLiveUptime [data-a-target="player-info"] .live-time {
+  display: none !important;
+}
