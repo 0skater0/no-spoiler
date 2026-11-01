@@ -1,9 +1,15 @@
+/* Browsers cap popups at 800 x 600 px. */
 body.ns-popup {
-  width: 360px;
-  max-height: 580px;
+  width: 440px;
+  max-height: 600px;
   margin: 0;
+  font-size: 15px;
 }
 
 .ns-popup main {
-  padding: 4px 12px 8px;
+  padding: 6px 14px 10px;
+}
+
+.ns-popup .ns-toggle {
+  padding: 6px 0;
 }

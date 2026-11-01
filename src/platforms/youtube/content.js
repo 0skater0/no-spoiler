@@ -3,6 +3,7 @@
  * - Marks thumbnail badges that are not durations, so CSS can show them again.
  * - Inserts skip buttons next to the play button (once per player).
  * - Switches autoplay off and back on.
+ * - Replaces the tab title and removes title tooltips.
  */
 "use strict";
 
@@ -19,6 +20,12 @@
     // Old layouts without a dedicated badge element: plain text inside the thumbnail
     badgeText: ["ytd-thumbnail #overlays span", "ytd-thumbnail #overlays div"],
     playButton: [".html5-video-player .ytp-play-button"],
+    tooltips: [
+      "#video-title[title]",
+      "#video-title-link[title]",
+      ".yt-lockup-metadata-view-model__title[title]",
+      "ytd-watch-metadata #title [title]",
+    ],
     autoplayToggle: [".ytp-autonav-toggle-button[aria-checked]", "[data-tooltip-target-id='ytp-autonav-toggle-button'] [aria-checked]"],
   };
 
@@ -95,6 +102,24 @@
     for (const el of doc.querySelectorAll(".ns-skip-controls")) el.remove();
   }
 
+  /* ----------------------------- tab title ----------------------------- */
+
+  const TAB_TITLE = "YouTube";
+  let originalTabTitle = null;
+
+  /** Replaces the tab title; YouTube rewrites it on navigation, so this runs on every tick. */
+  function maskTabTitle(doc) {
+    if (doc.title !== TAB_TITLE) {
+      originalTabTitle = doc.title;
+      doc.title = TAB_TITLE;
+    }
+  }
+
+  function restoreTabTitle(doc) {
+    if (originalTabTitle !== null && doc.title === TAB_TITLE) doc.title = originalTabTitle;
+    originalTabTitle = null;
+  }
+
   /* ------------------------------ autoplay ----------------------------- */
 
   let autoplayPending = true;
@@ -150,11 +175,17 @@
       if (ctx.active && opts.skipButtons) ensureSkipButtons(doc);
       else if (ctx.reason === "state") removeSkipButtons(doc);
 
+      if (ctx.active && opts.maskTitles) maskTabTitle(doc);
+      else if (ctx.reason === "state") restoreTabTitle(doc);
+
+      if (ctx.active && opts.hideTooltips) dom.stashTitles(doc, SEL.tooltips);
+      else if (ctx.reason === "state") dom.restoreTitles(doc);
+
       if (ctx.reason === "state" || ctx.reason === "navigate") autoplayPending = true;
       if (autoplayPending && reconcileAutoplay(ctx)) autoplayPending = false;
     },
   });
 
   // Exposed for tests.
-  NS.youtube = { SEL, markBadges, ensureSkipButtons, removeSkipButtons, skip, AUTOPLAY_RESTORE_KEY };
+  NS.youtube = { SEL, markBadges, ensureSkipButtons, removeSkipButtons, skip, AUTOPLAY_RESTORE_KEY, TAB_TITLE };
 })(globalThis);

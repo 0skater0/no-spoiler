@@ -16,6 +16,8 @@
     { "key": "hideRecommendations", "label": "Hide recommendations next to the video", "default": true, "group": "Watch page" },
     { "key": "hideChat", "label": "Hide live chat and chat replay", "default": true, "group": "Watch page" },
     { "key": "hideThumbnailDurations", "label": "Hide durations on thumbnails", "default": true, "group": "Thumbnails" },
-    { "key": "hideWatchProgress", "label": "Hide watch progress bars on thumbnails", "default": true, "group": "Thumbnails" }
+    { "key": "hideWatchProgress", "label": "Hide watch progress bars on thumbnails", "default": true, "group": "Thumbnails" },
+    { "key": "maskTitles", "label": "Hide video titles (page, player, thumbnails, browser tab)", "default": false, "group": "Titles" },
+    { "key": "hideTooltips", "label": "Hide title tooltips", "default": false, "group": "Titles" }
   ]
 }

@@ -117,3 +117,34 @@ html:not(.ns-youtube-skipButtons) .ns-skip-controls {
   background: rgba(255, 255, 255, 0.2);
   opacity: 1;
 }
+
+/*
+ * Titles. The text stays in the DOM (YouTube re-renders it anyway); it is
+ * shrunk to zero and a placeholder is shown instead.
+ */
+html.ns-on.ns-youtube-maskTitles ytd-watch-metadata #title h1,
+html.ns-on.ns-youtube-maskTitles .ytp-title-link,
+html.ns-on.ns-youtube-maskTitles #video-title,
+html.ns-on.ns-youtube-maskTitles .yt-lockup-metadata-view-model__title,
+html.ns-on.ns-youtube-maskTitles .ytp-videowall-still-info-title,
+html.ns-on.ns-youtube-maskTitles .ytp-autonav-endscreen-upnext-title {
+  font-size: 0 !important;
+}
+
+html.ns-on.ns-youtube-maskTitles ytd-watch-metadata #title h1::after,
+html.ns-on.ns-youtube-maskTitles .ytp-title-link::after,
+html.ns-on.ns-youtube-maskTitles #video-title::after,
+html.ns-on.ns-youtube-maskTitles .yt-lockup-metadata-view-model__title::after {
+  content: "Title hidden";
+  font-size: 1.4rem;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+html.ns-on.ns-youtube-maskTitles ytd-watch-metadata #title h1::after {
+  font-size: 2rem;
+}
+
+html.ns-on.ns-youtube-maskTitles .ytp-title-link::after {
+  font-size: 18px;
+}

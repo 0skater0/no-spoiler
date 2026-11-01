@@ -3,6 +3,7 @@
     <div id="primary">
       <div id="movie_player" class="html5-video-player">
         <div class="html5-video-container"><video class="video-stream html5-main-video"></video></div>
+        <div class="ytp-chrome-top"><a class="ytp-title-link" data-expect-hidden="maskTitles">Some video</a></div>
         <div class="ytp-chrome-bottom">
           <div class="ytp-progress-bar-container" data-expect-hidden="hideProgressBar">
             <div class="ytp-heat-map-container"></div>
@@ -41,7 +42,7 @@
       </div>
       <div id="below">
         <ytd-watch-metadata>
-          <div id="title" data-expect-visible><h1>Some video</h1></div>
+          <div id="title"><h1 data-expect-hidden="maskTitles"><yt-formatted-string title="Some video">Some video</yt-formatted-string></h1></div>
           <div id="owner" data-expect-visible>Channel</div>
           <div id="description" data-expect-hidden="hideDescription">
             <ytd-text-inline-expander id="description-inline-expander">0:00 Intro 12:30 Final</ytd-text-inline-expander>

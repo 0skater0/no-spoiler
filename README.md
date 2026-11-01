@@ -43,6 +43,8 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide live chat and chat replay | on |
 | Hide durations on thumbnails (home, search, recommendations) | on |
 | Hide watch progress bars on thumbnails | on |
+| Hide video titles (watch page, player, thumbnails, browser tab) | off |
+| Hide title tooltips | off |
 
 ### Twitch
 

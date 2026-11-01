@@ -27,7 +27,7 @@ describe("platform section", () => {
     const { state } = await NS.ui.load();
     const el = NS.ui.platformSection(yt, state, true, {});
     expect(el.querySelectorAll('input[role="switch"]')).toHaveLength(yt.options.length + 1);
-    expect([...el.querySelectorAll("legend")].map((l) => l.textContent)).toEqual(["Player", "Watch page", "Thumbnails"]);
+    expect([...el.querySelectorAll("legend")].map((l) => l.textContent)).toEqual(["Player", "Watch page", "Thumbnails", "Titles"]);
   });
 
   it("writes changes to storage immediately", async () => {

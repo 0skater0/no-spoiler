@@ -8,7 +8,7 @@ beforeEach(async () => {
 });
 
 const FIXTURES = ["youtube-watch.html", "youtube-home.html"];
-const JS_ONLY = ["disableAutoplay", "skipButtons"];
+const JS_ONLY = ["disableAutoplay", "skipButtons", "hideTooltips"];
 
 function ctx(overrides = {}, optionOverrides = {}) {
   const state = NS.defaultState();
@@ -156,5 +156,28 @@ describe("YouTube autoplay", () => {
     wireToggle();
     NS.hooks.youtube.update(ctx({ reason: "mutation" }));
     expect(toggle().getAttribute("aria-checked")).toBe("false");
+  });
+});
+
+describe("YouTube titles", () => {
+  it("replaces the tab title and restores the latest one", () => {
+    mountFixture("youtube-watch.html");
+    document.title = "Final match - YouTube";
+    NS.hooks.youtube.update(ctx({}, { maskTitles: true }));
+    expect(document.title).toBe(NS.youtube.TAB_TITLE);
+    // YouTube navigates and sets a new title
+    document.title = "Next video - YouTube";
+    NS.hooks.youtube.update(ctx({ reason: "mutation" }, { maskTitles: true }));
+    expect(document.title).toBe(NS.youtube.TAB_TITLE);
+    NS.hooks.youtube.update(ctx({}, { maskTitles: false }));
+    expect(document.title).toBe("Next video - YouTube");
+  });
+
+  it("removes title tooltips and restores them", () => {
+    mountFixture("youtube-home.html");
+    NS.hooks.youtube.update(ctx({}, { hideTooltips: true }));
+    expect(document.querySelector("#video-title[title]")).toBeNull();
+    NS.hooks.youtube.update(ctx({}, { hideTooltips: false }));
+    expect(document.querySelector("#video-title").getAttribute("title")).toBe("A video");
   });
 });

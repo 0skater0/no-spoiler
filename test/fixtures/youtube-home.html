@@ -13,7 +13,7 @@
           </ytd-thumbnail-overlay-resume-playback-renderer>
         </div>
       </ytd-thumbnail>
-      <div id="details" data-expect-visible><a id="video-title">A video</a></div>
+      <div id="details"><a id="video-title" title="A video" data-expect-hidden="maskTitles">A video</a><span id="channel-name" data-expect-visible>Channel</span></div>
     </ytd-rich-item-renderer>
 
     <ytd-rich-item-renderer>
@@ -43,7 +43,10 @@
             </yt-thumbnail-overlay-progress-bar-view-model>
           </yt-thumbnail-view-model>
         </a>
-        <div class="yt-lockup-view-model__metadata" data-expect-visible>Another video</div>
+        <div class="yt-lockup-view-model__metadata">
+          <a class="yt-lockup-metadata-view-model__title" data-expect-hidden="maskTitles"><span>Another video</span></a>
+          <span class="yt-content-metadata-view-model__metadata-text" data-expect-visible>12K views</span>
+        </div>
       </yt-lockup-view-model>
     </ytd-rich-item-renderer>
 
