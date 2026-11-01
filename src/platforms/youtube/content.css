@@ -1,0 +1,119 @@
+/*
+ * YouTube rules. Every rule hangs on html classes set by the content script:
+ *   html.ns-on                        protection active for this platform
+ *   html.ns-youtube-<option>          option switched on
+ * Several selectors per rule are fallbacks for older and newer YouTube layouts.
+ */
+
+/* Player: current time and duration */
+html.ns-on.ns-youtube-hideVideoTime .ytp-time-display,
+html.ns-on.ns-youtube-hideVideoTime .ytp-time-wrapper,
+html.ns-on.ns-youtube-hideVideoTime .ytp-time-contents,
+html.ns-on.ns-youtube-hideVideoTime .ytp-time-current,
+html.ns-on.ns-youtube-hideVideoTime .ytp-time-duration {
+  display: none !important;
+}
+
+/* Player: progress bar, chapter title, heat map, seek preview */
+html.ns-on.ns-youtube-hideProgressBar .ytp-progress-bar-container,
+html.ns-on.ns-youtube-hideProgressBar .ytp-chapter-container,
+html.ns-on.ns-youtube-hideProgressBar .ytp-heat-map-container,
+html.ns-on.ns-youtube-hideProgressBar .ytp-tooltip.ytp-preview,
+html.ns-on.ns-youtube-hideProgressBar .ytp-storyboard-framepreview {
+  display: none !important;
+}
+
+/* Player: end screen, end cards, up-next overlay */
+html.ns-on.ns-youtube-hideEndcards .ytp-endscreen-content,
+html.ns-on.ns-youtube-hideEndcards .html5-endscreen,
+html.ns-on.ns-youtube-hideEndcards .ytp-ce-element,
+html.ns-on.ns-youtube-hideEndcards .ytp-ce-top-left-quad,
+html.ns-on.ns-youtube-hideEndcards .ytp-ce-top-right-quad,
+html.ns-on.ns-youtube-hideEndcards .ytp-ce-bottom-left-quad,
+html.ns-on.ns-youtube-hideEndcards .ytp-ce-bottom-right-quad,
+html.ns-on.ns-youtube-hideEndcards .ytp-autonav-endscreen-upnext-container,
+html.ns-on.ns-youtube-hideEndcards .ytp-fullscreen-grid {
+  display: none !important;
+}
+
+/* Watch page: comments */
+html.ns-on.ns-youtube-hideComments ytd-comments#comments,
+html.ns-on.ns-youtube-hideComments ytd-watch-flexy #comments {
+  display: none !important;
+}
+
+/* Watch page: description and chapter panels */
+html.ns-on.ns-youtube-hideDescription ytd-watch-metadata #description,
+html.ns-on.ns-youtube-hideDescription ytd-watch-flexy #description,
+html.ns-on.ns-youtube-hideDescription ytd-text-inline-expander#description-inline-expander,
+html.ns-on.ns-youtube-hideDescription ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-macro-markers-description-chapters"],
+html.ns-on.ns-youtube-hideDescription ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-macro-markers-auto-chapters"] {
+  display: none !important;
+}
+
+/* Watch page: recommendations */
+html.ns-on.ns-youtube-hideRecommendations ytd-watch-flexy #related,
+html.ns-on.ns-youtube-hideRecommendations ytd-watch-next-secondary-results-renderer,
+html.ns-on.ns-youtube-hideRecommendations .ytp-suggestion-set {
+  display: none !important;
+}
+
+/* Watch page: live chat and chat replay */
+html.ns-on.ns-youtube-hideChat ytd-live-chat-frame#chat,
+html.ns-on.ns-youtube-hideChat ytd-watch-flexy #chat-container,
+html.ns-on.ns-youtube-hideChat ytd-watch-flexy #chat {
+  display: none !important;
+}
+
+/*
+ * Thumbnails: duration badges.
+ * Fail closed: every thumbnail badge is hidden; the content script marks
+ * badges that are not a duration (LIVE, SHORTS, "New") with data-ns-keep.
+ */
+html.ns-on.ns-youtube-hideThumbnailDurations ytd-thumbnail-overlay-time-status-renderer:not([overlay-style="LIVE"]):not([overlay-style="SHORTS"]):not([data-ns-keep]),
+html.ns-on.ns-youtube-hideThumbnailDurations yt-thumbnail-badge-view-model:not([data-ns-keep]),
+html.ns-on.ns-youtube-hideThumbnailDurations yt-thumbnail-view-model badge-shape:not([data-ns-keep]),
+html.ns-on.ns-youtube-hideThumbnailDurations ytd-thumbnail [data-ns-duration] {
+  display: none !important;
+}
+
+/* Thumbnails: red "already watched" bars */
+html.ns-on.ns-youtube-hideWatchProgress ytd-thumbnail-overlay-resume-playback-renderer,
+html.ns-on.ns-youtube-hideWatchProgress yt-thumbnail-overlay-progress-bar-view-model,
+html.ns-on.ns-youtube-hideWatchProgress .ytThumbnailOverlayProgressBarHost {
+  display: none !important;
+}
+
+/* Skip buttons, inserted by content.js */
+.ns-skip-controls {
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+  gap: 2px;
+  vertical-align: top;
+}
+
+html:not(.ns-on) .ns-skip-controls,
+html:not(.ns-youtube-skipButtons) .ns-skip-controls {
+  display: none !important;
+}
+
+.ns-skip-controls button {
+  all: unset;
+  box-sizing: border-box;
+  min-width: 36px;
+  height: 28px;
+  padding: 0 6px;
+  border-radius: 14px;
+  color: #fff;
+  font: 500 13px/28px Roboto, Arial, sans-serif;
+  text-align: center;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.ns-skip-controls button:hover,
+.ns-skip-controls button:focus-visible {
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+}

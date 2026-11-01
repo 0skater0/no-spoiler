@@ -1,0 +1,21 @@
+{
+  "id": "youtube",
+  "label": "YouTube",
+  "matches": ["*://*.youtube.com/*"],
+  "order": 10,
+  "hostAccess": "required",
+  "contentScript": true,
+  "options": [
+    { "key": "hideVideoTime", "label": "Hide current time and duration in the player", "default": true, "group": "Player" },
+    { "key": "hideProgressBar", "label": "Hide progress bar and chapter title", "default": true, "group": "Player" },
+    { "key": "hideEndcards", "label": "Hide end screen and end cards", "default": true, "group": "Player" },
+    { "key": "disableAutoplay", "label": "Turn off autoplay", "default": true, "group": "Player" },
+    { "key": "skipButtons", "label": "Show skip buttons (-10, -5, +5, +10 min)", "default": false, "group": "Player" },
+    { "key": "hideComments", "label": "Hide comments", "default": true, "group": "Watch page" },
+    { "key": "hideDescription", "label": "Hide description and chapter list", "default": true, "group": "Watch page" },
+    { "key": "hideRecommendations", "label": "Hide recommendations next to the video", "default": true, "group": "Watch page" },
+    { "key": "hideChat", "label": "Hide live chat and chat replay", "default": true, "group": "Watch page" },
+    { "key": "hideThumbnailDurations", "label": "Hide durations on thumbnails", "default": true, "group": "Thumbnails" },
+    { "key": "hideWatchProgress", "label": "Hide watch progress bars on thumbnails", "default": true, "group": "Thumbnails" }
+  ]
+}
