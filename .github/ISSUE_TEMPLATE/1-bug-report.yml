@@ -1,5 +1,5 @@
 name: Bug report
-description: Create a report to help improve No Spoilers - Youtube
+description: Create a report to help improve No Spoilers
 labels: ["bug"]
 title: "[Bug]: "
 body:
@@ -9,7 +9,7 @@ body:
       label: Pre-check
       description: "You must confirm **all** of the following before you can submit this report."
       options:
-        - label: I have searched the [existing issues](https://github.com/0skater0/Firefox-No-Spoiler/issues) and this bug has not been reported yet.
+        - label: I have searched the [existing issues](https://github.com/0skater0/no-spoiler/issues) and this bug has not been reported yet.
           required: true
         - label: I have tested with the latest version of the extension.
           required: true
@@ -27,7 +27,7 @@ body:
       label: How to reproduce
       description: "Steps to reproduce the behavior."
       placeholder: |
-        1. Open YouTube
+        1. Open YouTube or Twitch
         2. Navigate to a video
         3. Enable the extension
         4. Click on [...]
@@ -42,12 +42,32 @@ body:
       placeholder: "The behavior that I expect to see is [...]"
     validations:
       required: true
-  - type: input
-    id: youtube-url
+  - type: dropdown
+    id: platform
     attributes:
-      label: YouTube URL
-      description: "The YouTube URL where the issue occurs (if applicable)."
-      placeholder: "e.g. https://www.youtube.com/watch?v=..."
+      label: Site
+      options:
+        - YouTube
+        - Twitch
+        - Popup or settings page
+        - Other
+      default: 0
+    validations:
+      required: true
+  - type: input
+    id: page-url
+    attributes:
+      label: Page URL
+      description: "The URL where the issue occurs (if applicable)."
+      placeholder: "e.g. https://www.youtube.com/watch?v=... or https://www.twitch.tv/videos/..."
+    validations:
+      required: false
+  - type: input
+    id: option
+    attributes:
+      label: Affected option
+      description: "The option that does not work as expected (if applicable)."
+      placeholder: "e.g. Hide durations on thumbnails"
     validations:
       required: false
   - type: dropdown
@@ -65,8 +85,8 @@ body:
     id: extension-version
     attributes:
       label: Extension version
-      description: "Found in `about:addons` → No Spoilers: Youtube"
-      placeholder: "e.g. 0.9.9"
+      description: "Shown at the bottom of the settings page, or in `about:addons` (Firefox) / `chrome://extensions` (Chrome)."
+      placeholder: "e.g. 1.0.0"
     validations:
       required: true
   - type: input
@@ -107,7 +127,7 @@ body:
     id: additional-context
     attributes:
       label: Additional context
-      description: "Add any other context about the problem here (other extensions installed, YouTube settings, etc.)."
+      description: "Add any other context about the problem here (other extensions installed, site settings, etc.)."
       placeholder: "Also note that [...]"
     validations:
       required: false
