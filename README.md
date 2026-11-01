@@ -1,12 +1,18 @@
 # No Spoilers
 
-Browser extension for Firefox and Chrome that hides spoilers on video sites:
-video time, progress bars, durations on thumbnails, comments, chat replay,
-recommendations and end screens. One code base, Manifest V3, one module per
-site.
+![Latest release](https://img.shields.io/github/v/release/0skater0/no-spoiler)
+![Firefox users](https://img.shields.io/amo/users/no-spoilers-youtube?label=Firefox%20users)
+![License](https://img.shields.io/github/license/0skater0/no-spoiler)
+![Open issues](https://img.shields.io/github/issues/0skater0/no-spoiler)
+![Last commit](https://img.shields.io/github/last-commit/0skater0/no-spoiler)
 
-Supported sites: **YouTube** and **Twitch**. More can be added as platform
-modules without touching the core (see [Adding a platform](#adding-a-platform)).
+Browser extension for Firefox and Chrome that hides spoilers on video sites:
+video time, progress bars, durations on thumbnails, comments, chat,
+recommendations and end screens. Beyond spoilers, it lets you decide what
+else you want to see, for example titles, tags or sidebar recommendations,
+and adds jump buttons to the player.
+
+Supported sites: **YouTube** and **Twitch**.
 
 ![Demo GIF](images/demo.gif)
 
@@ -79,174 +85,50 @@ install.
 
 ### From the stores
 
-- Firefox: [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/no-spoilers-youtube/)
-- Chrome: not published yet
+- **Firefox:** [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/no-spoilers-youtube/), click *Add to Firefox*.
+- **Chrome:** not published yet.
 
-### From source
+### Manually (latest build or development)
 
-Requirements: Node.js 22 or 24 (LTS). Odd versions such as 25 work but are not supported by the test tools.
-
-```bash
-npm ci
-npm run build
-```
-
-This creates `dist/firefox` and `dist/chrome`.
+Download `no-spoiler-firefox-<version>.zip` or `no-spoiler-chrome-<version>.zip`
+from the [latest release](https://github.com/0skater0/no-spoiler/releases), or
+build it yourself (see [CONTRIBUTING](CONTRIBUTING.md)).
 
 - **Firefox:** open `about:debugging#/runtime/this-firefox`, click
-  "Load Temporary Add-on…" and select `dist/firefox/manifest.json`.
-- **Chrome:** open `chrome://extensions`, enable "Developer mode", click
-  "Load unpacked" and select the `dist/chrome` folder.
+  *Load Temporary Add-on…* and select the zip or `dist/firefox/manifest.json`.
+  Temporary add-ons are removed when Firefox restarts.
+- **Chrome:** unpack the zip into a folder, open `chrome://extensions`, enable
+  *Developer mode*, click *Load unpacked* and select that folder (or
+  `dist/chrome`).
 
-`npm run package` additionally writes
-`dist/no-spoiler-firefox-<version>.zip` and `dist/no-spoiler-chrome-<version>.zip`.
+### Twitch access
 
-## Development
-
-| Command | Purpose |
-|---|---|
-| `npm run build` | Build both browsers (`build:firefox`, `build:chrome` for one) |
-| `npm test` | Unit tests (vitest + jsdom) |
-| `npm run lint` | Build Firefox and run `web-ext lint` |
-| `npm run package` | Build and zip both browsers |
-
-Manual test steps for both browsers are in [TESTING.md](TESTING.md).
-
-### Layout
-
-```
-src/
-  core/            shared by all scripts (classic scripts, one namespace)
-    api.js           browser/chrome shim
-    registry.js      platform registry, settings model, html classes
-    storage.js       storage access and migration from 0.9.x
-    content-core.js  content runtime: classes, observer, SPA navigation, helpers
-    player-controls.js skip bar and centre overlay shared by all platforms
-    content-start.js starts the runtime (last content script file)
-  platforms/<id>/  one folder per site
-    platform.json    id, label, match patterns, host access, options
-    content.css      hiding rules
-    content.js       optional: what CSS cannot do
-  background/      install/update, icon, shortcut, content script registration
-  popup/           toolbar popup
-  options/         "All settings" page
-  ui/              settings UI shared by popup and options page
-scripts/
-  build.mjs        builds dist/<browser> and the manifests
-  manifest.base.json
-test/              unit tests and DOM fixtures
-```
-
-There is no bundler: what ships is the source. All scripts are classic
-scripts that share the `globalThis.NoSpoiler` namespace, because MV3 content
-scripts cannot be ES modules. The build copies `src/`, generates the
-manifest per browser and `core/platforms.generated.js` from the
-`platform.json` files.
-
-Browser differences are handled in `scripts/build.mjs`:
-
-| | Firefox | Chrome |
-|---|---|---|
-| Background | `background.scripts` (event page) | `background.service_worker` |
-| `browser_specific_settings` | Gecko ID, minimum version, data collection | removed |
-| Shortcut | `Ctrl+Alt+U` | `Alt+Shift+U` |
-
-At runtime `NoSpoiler.api` is `browser` in Firefox and `chrome` in Chrome;
-both return Promises in MV3, so no polyfill is needed.
-
-### How hiding works
-
-The content script runs at `document_start` and sets classes on `<html>`:
-`ns-on` while protection is on for the site, and `ns-<platform>-<option>` for
-every option that is on. All hiding rules in `content.css` hang on these
-classes, so switching is a class change: instant, no reload, no flicker.
-Until the settings are read, the defaults apply (fail closed).
-
-JavaScript is used only where CSS cannot decide: checking whether a badge
-shows a duration, inserting skip buttons, switching autoplay, removing
-`title` tooltips. One throttled `MutationObserver` per page calls the
-platform's `update(ctx)` hook. Every change made by JavaScript is undone when
-the option or the protection is switched off.
-
-The extension makes no network requests.
-
-## Adding a platform
-
-1. Create `src/platforms/<id>/platform.json`:
-
-   ```json
-   {
-     "id": "example",
-     "label": "Example",
-     "matches": ["https://*.example.com/*"],
-     "order": 30,
-     "hostAccess": "optional",
-     "contentScript": true,
-     "options": [
-       { "key": "hideDuration", "label": "Hide video duration", "default": true, "group": "Player" }
-     ]
-   }
-   ```
-
-   - `id` equals the folder name (lowercase letters and digits).
-   - `hostAccess: "optional"` for every new site. Users grant access from the
-     popup; a required permission would make Firefox hold the update for all
-     existing users until they accept it.
-   - Option keys are camelCase, `enabled` is reserved.
-   - Options are switches by default. `"type": "steps"` with `"choices"`
-     (seconds) and a `"default"` subset renders a picker for jump sizes.
-     `"dependsOn": "<switch key>"` greys an option out while that switch is off.
-
-2. Create `src/platforms/<id>/content.css`. Scope every rule to the classes:
-
-   ```css
-   html.ns-on.ns-example-hideDuration .player-duration {
-     display: none !important;
-   }
-   ```
-
-   Prefer stable attributes (`data-*`, `aria-*`, `href`) over class names
-   and list fallback selectors for older and newer layouts.
-
-3. Optional: `src/platforms/<id>/content.js` for what CSS cannot do:
-
-   ```js
-   "use strict";
-   (function (root) {
-     const NS = root.NoSpoiler;
-     NS.definePlatform("example", {
-       navigationEvents: [], // custom SPA events, if the site has any
-       update(ctx) {
-         // ctx.reason: "state" | "mutation" | "navigate"
-         // ctx.active, ctx.options, ctx.document, ctx.url
-         // Make the DOM match ctx; undo your changes when !ctx.active.
-       },
-     });
-   })(globalThis);
-   ```
-
-   Helpers in `NoSpoiler.dom`: `isDuration`, `queryAll`, `queryFirst`,
-   `badgeFor`, `stashTitles`, `restoreTitles`, `clearAttr`. Seek controls in
-   `NoSpoiler.player`: `ensureSkipBar`, `ensureOverlay`, `remove`.
-
-4. Add fixtures to `test/fixtures/` (see its README) and a test like
-   `test/twitch.test.js`. Every option needs at least one
-   `data-expect-hidden` element.
-
-5. `npm test && npm run lint`. Popup, options page, manifest and permissions
-   pick up the new platform automatically.
+YouTube access is granted on install. Twitch is optional: open the popup on
+Twitch (or the Twitch section anywhere) and click *Allow access to twitch.tv*.
 
 ## Updating from 0.9.x
 
 The Firefox add-on keeps its ID, so existing installations update from AMO.
-On update the settings are migrated: the old "show" options become the new
-"hide" options, the on/off state is kept, and the old keys are removed.
+Your settings are carried over: the old "show" options become the new "hide"
+options, the on/off state is kept, and the old storage keys are removed.
+
+## Privacy
+
+No Spoilers makes no network requests and collects no data. Settings are
+stored in the browser's extension storage (synced by the browser if you use
+its sync). See [PRIVACY.md](PRIVACY.md).
+
+## Contributing
+
+Bug reports, ideas and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md)
+covers the setup, the architecture and how to add a new site.
+[TESTING.md](TESTING.md) has the manual test checklist.
 
 ## Feedback and support
 
 Please report problems and ideas [as an issue](https://github.com/0skater0/no-spoiler/issues).
 When a site changed its layout and something is no longer hidden, the page
-URL and the option name help most.
+URL and the option name help most. Security issues: see [SECURITY.md](SECURITY.md).
 
 ## License
 

@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Firefox Add-on Page
-    url: https://addons.mozilla.org/de/firefox/addon/no-spoilers-youtube/
-    about: Visit the official Firefox Add-on page for general information and reviews.
+  - name: Report a security issue
+    url: https://github.com/0skater0/no-spoiler/security/advisories/new
+    about: Please report security issues privately, not as a public issue.
+  - name: Firefox Add-on page
+    url: https://addons.mozilla.org/firefox/addon/no-spoilers-youtube/
+    about: General information and reviews.
