@@ -74,7 +74,7 @@ install.
 
 ### From source
 
-Requirements: Node.js 20 or newer.
+Requirements: Node.js 22 or 24 (LTS). Odd versions such as 25 work but are not supported by the test tools.
 
 ```bash
 npm ci
