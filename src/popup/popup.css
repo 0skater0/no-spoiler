@@ -1,0 +1,9 @@
+body.ns-popup {
+  width: 360px;
+  max-height: 580px;
+  margin: 0;
+}
+
+.ns-popup main {
+  padding: 4px 12px 8px;
+}

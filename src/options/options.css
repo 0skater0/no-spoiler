@@ -1,0 +1,14 @@
+body.ns-options {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.ns-options .ns-platform,
+.ns-card {
+  margin-top: 16px;
+}
+
+.ns-options .ns-footer {
+  margin-top: 24px;
+}

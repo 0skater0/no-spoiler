@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>No Spoilers settings</title>
+    <link rel="icon" href="../icons/on-32.png" />
+    <link rel="stylesheet" href="../ui/ui.css" />
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body class="ns-options">
+    <header class="ns-header">
+      <img src="../icons/on-48.png" alt="" width="32" height="32" />
+      <h1>No Spoilers</h1>
+      <div id="master"></div>
+    </header>
+
+    <section class="ns-card" aria-labelledby="shortcut-heading">
+      <h2 id="shortcut-heading">Keyboard shortcut</h2>
+      <p class="ns-muted">Switches protection on and off.</p>
+      <div id="shortcut"></div>
+    </section>
+
+    <main id="content"></main>
+
+    <footer class="ns-footer ns-muted">
+      <span id="version"></span>
+      <a href="https://github.com/0skater0/no-spoiler" target="_blank" rel="noopener">Source and issues</a>
+    </footer>
+
+    <script src="../core/api.js"></script>
+    <script src="../core/registry.js"></script>
+    <script src="../core/platforms.generated.js"></script>
+    <script src="../core/storage.js"></script>
+    <script src="../ui/settings-ui.js"></script>
+    <script src="options.js"></script>
+  </body>
+</html>

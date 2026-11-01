@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="color-scheme" content="light dark" />
+    <title>No Spoilers</title>
+    <link rel="stylesheet" href="../ui/ui.css" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body class="ns-popup">
+    <header class="ns-header">
+      <img src="../icons/on-32.png" alt="" width="20" height="20" />
+      <h1>No Spoilers</h1>
+      <div id="master"></div>
+    </header>
+    <main id="content"></main>
+    <footer class="ns-footer">
+      <button type="button" id="open-options" class="ns-button">All settings</button>
+      <span id="shortcut" class="ns-muted"></span>
+    </footer>
+    <script src="../core/api.js"></script>
+    <script src="../core/registry.js"></script>
+    <script src="../core/platforms.generated.js"></script>
+    <script src="../core/storage.js"></script>
+    <script src="../ui/settings-ui.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
