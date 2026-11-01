@@ -1,5 +1,5 @@
-# ignore minified code
-/src/minified/
-
-.vscode
+node_modules/
+dist/
+coverage/
+.vscode/
 .idea/
