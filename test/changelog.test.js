@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { changelogSection } from "../scripts/lib/changelog.mjs";
+import { changelogSection, toPlainText } from "../scripts/lib/changelog.mjs";
 import { ROOT } from "./helpers/env.js";
 
 describe("changelog extraction", () => {
@@ -17,5 +17,14 @@ describe("changelog extraction", () => {
   it("has a non-empty section for the current package version", async () => {
     const { version } = (await import("../package.json", { with: { type: "json" } })).default;
     expect(changelogSection(path.join(ROOT, "CHANGELOG.md"), version)).not.toBe("");
+  });
+});
+
+describe("plain text release notes", () => {
+  it("removes Markdown that stores do not render", () => {
+    const md = "Intro with *emphasis*.\n\n### Added\n\n- Option `hideX` for **titles**\n- See [docs](https://x.test)\n\n\n\n### Fixed\n\n- Bug";
+    expect(toPlainText(md)).toBe(
+      "Intro with emphasis.\n\nAdded:\n\n\u2022 Option hideX for titles\n\u2022 See docs (https://x.test)\n\nFixed:\n\n\u2022 Bug",
+    );
   });
 });

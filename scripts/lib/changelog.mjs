@@ -15,3 +15,24 @@ export function changelogSection(file, version) {
   }
   return out.join("\n").trim();
 }
+
+/**
+ * Turns a changelog section (Markdown) into plain text for store fields that
+ * do not render Markdown, such as the AMO release notes.
+ */
+export function toPlainText(markdown) {
+  return markdown
+    .split("\n")
+    .map((line) =>
+      line
+        .replace(/^#{1,6}\s+(.*)$/, "$1:")
+        .replace(/^\s*[-*]\s+/, "\u2022 ")
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1 ($2)")
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
+        .replace(/\*([^*]+)\*/g, "$1")
+        .replace(/`([^`]+)`/g, "$1"),
+    )
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}

@@ -7,7 +7,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { changelogSection } from "./lib/changelog.mjs";
+import { changelogSection, toPlainText } from "./lib/changelog.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const { AMO_JWT_ISSUER, AMO_JWT_SECRET } = process.env;
@@ -17,10 +17,25 @@ if (!AMO_JWT_ISSUER || !AMO_JWT_SECRET) {
 }
 
 const { version } = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8"));
-const notes = changelogSection(path.join(ROOT, "CHANGELOG.md"), version);
+const notes = toPlainText(changelogSection(path.join(ROOT, "CHANGELOG.md"), version));
+
+// Shown to the AMO reviewers only.
+const APPROVAL_NOTES = [
+  "The package contains the source as it is in the public repository; nothing is minified, bundled or transpiled.",
+  "core/platforms.generated.js is plain data generated from src/platforms/*/platform.json by scripts/build.mjs.",
+  `Source and build instructions: https://github.com/0skater0/no-spoiler/tree/v${version} (npm ci && npm run build).`,
+  "",
+  "How to test: open any YouTube video; the player time, progress bar, comments and recommendations are hidden.",
+  "The toolbar popup switches the protection and the individual options. Twitch access is an optional host",
+  "permission, requested from the popup; then open a Twitch video (twitch.tv/videos/...) to see the seek bar hidden.",
+  "No network requests, no remote code, no data collection.",
+].join("\n");
 const tmp = mkdtempSync(path.join(os.tmpdir(), "ns-amo-"));
 const metadata = path.join(tmp, "amo-metadata.json");
-writeFileSync(metadata, JSON.stringify({ version: { release_notes: { "en-US": notes } } }));
+writeFileSync(
+  metadata,
+  JSON.stringify({ version: { release_notes: { "en-US": notes }, approval_notes: APPROVAL_NOTES } }),
+);
 
 execFileSync(
   process.execPath,
