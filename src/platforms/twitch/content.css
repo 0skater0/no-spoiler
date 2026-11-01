@@ -9,49 +9,35 @@
  * names often; the attributes are more stable.
  */
 
-/* Player: current time and duration */
+/* Player: current time and duration (the label row above the seek bar) */
 html.ns-on.ns-twitch-hidePlayerTime [data-a-target="player-seekbar-current-time"],
-html.ns-on.ns-twitch-hidePlayerTime [data-a-target="player-seekbar-duration"] {
+html.ns-on.ns-twitch-hidePlayerTime [data-a-target="player-seekbar-duration"],
+html.ns-on.ns-twitch-hidePlayerTime .vod-seekbar-time-labels {
   display: none !important;
 }
 
 /*
- * Player: seek bar progress.
- * The content of the seek bar is made invisible (opacity keeps it clickable),
- * and a neutral track is drawn over it. This does not depend on the colour or
- * structure of the progress fill and the knob.
+ * Player: seek bar progress. The seek bar is
+ *   [data-a-target="player-seekbar"] > .seekbar-bar > span[seekbar-segment__segment]...
+ *                                                    > span > div.seekbar-thumb[role=slider]
+ * The played/buffered segments and the knob become invisible; the bar itself
+ * stays as a neutral track, and clicking it still seeks.
  */
-html.ns-on.ns-twitch-hideSeekbarProgress [data-a-target="player-seekbar"]:not(input) > *,
-html.ns-on.ns-twitch-hideSeekbarProgress [data-ns-seekbar] > * {
+html.ns-on.ns-twitch-hideSeekbarProgress [data-a-target="player-seekbar"] [data-test-selector="seekbar-segment__segment"],
+html.ns-on.ns-twitch-hideSeekbarProgress [data-a-target="player-seekbar"] .seekbar-segment,
+html.ns-on.ns-twitch-hideSeekbarProgress [data-a-target="player-seekbar"] [role="slider"],
+html.ns-on.ns-twitch-hideSeekbarProgress [data-a-target="player-seekbar"] .seekbar-thumb {
   opacity: 0 !important;
 }
 
-html.ns-on.ns-twitch-hideSeekbarProgress [data-ns-seekbar][data-ns-static] {
-  position: relative !important;
-}
-
-html.ns-on.ns-twitch-hideSeekbarProgress [data-ns-seekbar]::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 4px;
-  transform: translateY(-50%);
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.35);
-  pointer-events: none;
-}
-
-/* Player: preview thumbnail and time while hovering the seek bar */
-html.ns-on.ns-twitch-hideSeekbarPreview [data-a-target="player-seekbar-preview"],
-html.ns-on.ns-twitch-hideSeekbarPreview [data-test-selector="seekbar-preview"],
-html.ns-on.ns-twitch-hideSeekbarPreview [data-a-target="player-seekbar"] [role="tooltip"],
-html.ns-on.ns-twitch-hideSeekbarPreview .seekbar-preview {
+/* Player: preview image and time while hovering the seek bar */
+html.ns-on.ns-twitch-hideSeekbarPreview [data-a-target="player-controls"] [role="dialog"]:has([data-test-selector^="vod-seekbar-preview"]),
+html.ns-on.ns-twitch-hideSeekbarPreview [data-test-selector^="vod-seekbar-preview"],
+html.ns-on.ns-twitch-hideSeekbarPreview [data-a-target="player-seekbar"] [role="tooltip"] {
   display: none !important;
 }
 
-/* Player: recommendations / autoplay countdown at the end of a video */
+/* Player: recommendations / autoplay countdown at the end of a video (not yet verified) */
 html.ns-on.ns-twitch-hideEndRecommendations [data-a-target="player-overlay-video-recommendations"],
 html.ns-on.ns-twitch-hideEndRecommendations [data-test-selector="video-player__recommendations"],
 html.ns-on.ns-twitch-hideEndRecommendations [data-a-target="autoplay-countdown"],
@@ -59,15 +45,18 @@ html.ns-on.ns-twitch-hideEndRecommendations .autoplay-vod__content-container {
   display: none !important;
 }
 
-/* Chat on live streams (selectors not yet verified against the live site) */
-html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) .stream-chat,
-html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) .chat-shell,
-html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) [data-test-selector="chat-room-component-layout"] {
+/*
+ * Chat. Live streams and videos share the right column
+ * ([data-a-target="right-column-chat-bar"] > ... aside > .chat-shell);
+ * hiding the whole column lets the player use the width.
+ */
+html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) [data-a-target="right-column-chat-bar"],
+html.ns-on.ns-twitch-hideLiveChat:not([data-ns-page="vod"]) .chat-shell {
   display: none !important;
 }
 
-/* Chat replay on video pages */
-html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] [data-a-target="video-chat"],
+html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] [data-a-target="right-column-chat-bar"],
+html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] .chat-shell,
 html.ns-on.ns-twitch-hideVodChatReplay[data-ns-page="vod"] .video-chat {
   display: none !important;
 }

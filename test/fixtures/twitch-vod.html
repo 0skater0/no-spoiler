@@ -1,37 +1,72 @@
+<!-- Reduced from a live twitch.tv video page (2026-11). -->
 <div id="root">
   <main>
     <div data-a-target="video-player" class="video-player">
-      <video></video>
+      <div data-a-target="video-ref"><video></video></div>
       <div data-a-target="player-overlay-video-recommendations" data-expect-hidden="hideEndRecommendations">
         <a href="/videos/222">Next video</a>
       </div>
-      <div class="player-controls">
-        <div class="seekbar-wrapper">
-          <p data-a-target="player-seekbar-current-time" data-expect-hidden="hidePlayerTime">1:02:03</p>
-          <div data-a-target="player-seekbar" class="seekbar-interaction-area">
-            <div class="seekbar-bar" data-expect-hidden="hideSeekbarProgress">
-              <div class="seekbar-segment" style="width: 63%; background: rgb(169, 112, 255)"></div>
+      <div data-a-target="player-controls" class="player-controls" dir="ltr">
+        <div>
+          <div>
+            <div class="tw-transition">
+              <div role="dialog" class="Attached" data-expect-hidden="hideSeekbarPreview">
+                <div class="ScBalloonWrapper">
+                  <div data-test-selector="vod-seekbar-preview-overlay-preview-image"><img alt="" /></div>
+                  <div><p>04:26:47</p></div>
+                </div>
+              </div>
             </div>
-            <div role="tooltip" data-expect-hidden="hideSeekbarPreview">1:30:00</div>
+            <div class="vod-seekbar-time-labels" data-expect-hidden="hidePlayerTime">
+              <p data-a-target="player-seekbar-current-time" data-expect-hidden="hidePlayerTime">03:02:12</p>
+              <p data-a-target="player-seekbar-duration" data-a-value="39995.983" data-expect-hidden="hidePlayerTime">11:06:35</p>
+            </div>
+            <div data-test-selector="seekbar-interaction-area__interactionArea" data-a-target="player-seekbar" class="seekbar-interaction-area" data-expect-visible>
+              <div class="seekbar-bar" data-expect-visible>
+                <span data-test-selector="seekbar-segment__segment" class="seekbar-segment" style="width: 27%" data-expect-hidden="hideSeekbarProgress"></span>
+                <span data-test-selector="seekbar-segment__segment" class="seekbar-segment" style="width: 30%" data-expect-hidden="hideSeekbarProgress"></span>
+                <span>
+                  <div class="tw-transition">
+                    <div class="seekbar-thumb" role="slider" tabindex="0" data-expect-hidden="hideSeekbarProgress"><p></p></div>
+                  </div>
+                </span>
+              </div>
+            </div>
           </div>
-          <p data-a-target="player-seekbar-duration" data-expect-hidden="hidePlayerTime">3:12:45</p>
         </div>
-        <div data-a-target="player-controls">
-          <div class="left-controls">
-            <div class="play-wrapper"><button data-a-target="player-play-pause-button" data-expect-visible></button></div>
-            <div class="volume" data-expect-visible></div>
+        <section id="channel-player" aria-label="Player-Steuerung">
+          <div>
+            <div class="player-controls__left-control-group">
+              <div class="play-wrapper">
+                <div class="ScLayoutCssVars">
+                  <button aria-label="Pause (Leerzeichen/k)" data-a-target="player-play-pause-button" data-a-player-state="playing" data-expect-visible></button>
+                </div>
+              </div>
+              <div class="volume" data-expect-visible>
+                <button data-a-target="player-mute-unmute-button"></button>
+              </div>
+            </div>
+            <div class="player-controls__right-control-group" data-expect-visible>
+              <button data-a-target="player-settings-button"></button>
+              <button data-a-target="player-fullscreen-button"></button>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     </div>
+    <!-- Video title on the page: markup not captured yet -->
     <div data-a-target="player-info">
       <h2 data-a-target="stream-title" title="Grand final, team A wins" data-expect-hidden="maskTitles">Grand final, team A wins</h2>
-      <a data-a-target="player-info-channel" data-expect-visible>channel</a>
     </div>
   </main>
-  <aside>
-    <section class="video-chat" data-expect-hidden="hideVodChatReplay">
-      <div class="video-chat__message-list-wrapper">GG</div>
-    </section>
-  </aside>
+  <div class="right-column right-column--beside" role="complementary" data-a-target="right-column-chat-bar" data-expect-hidden="hideVodChatReplay">
+    <button data-a-target="right-column__toggle-collapse-btn" aria-label="Chat einklappen"></button>
+    <aside id="live-page-chat" aria-label="Stream-Chat">
+      <div class="channel-root__right-column">
+        <div class="chat-shell chat-shell__expanded" data-expect-hidden="hideVodChatReplay">
+          <section class="video-chat" data-expect-hidden="hideVodChatReplay">GG</section>
+        </div>
+      </div>
+    </aside>
+  </div>
 </div>

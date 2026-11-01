@@ -84,19 +84,19 @@ describe("Twitch durations and seek bar", () => {
     expect(document.querySelector(".live-time [data-ns-duration]")).toBeNull();
   });
 
-  it("marks the seek bar container, never an input", () => {
-    document.body.innerHTML = '<div id="wrap"><input type="range" data-a-target="player-seekbar" /></div>';
-    NS.twitch.markSeekbars(document, window);
-    expect(document.getElementById("wrap").hasAttribute("data-ns-seekbar")).toBe(true);
-    expect(document.querySelector("input").hasAttribute("data-ns-seekbar")).toBe(false);
+  it("hides seek bar progress and knob but keeps the bar clickable", () => {
+    const hidden = render(NS, "twitch", "twitch-vod.html", ["hideSeekbarProgress"], { url: "https://www.twitch.tv/videos/1" });
+    expect(hidden(document.querySelector('[data-a-target="player-seekbar"]'))).toBe(false);
+    expect(hidden(document.querySelector(".seekbar-bar"))).toBe(false);
+    expect(hidden(document.querySelector(".seekbar-thumb"))).toBe(true);
   });
 
-  it("removes marks when switched off", () => {
-    mountFixture("twitch-vod.html");
-    NS.hooks.twitch.update(ctx({ url: "https://www.twitch.tv/videos/1" }));
-    expect(document.querySelector("[data-ns-seekbar]")).not.toBeNull();
+  it("removes duration marks when switched off", () => {
+    mountFixture("twitch-directory.html");
+    NS.hooks.twitch.update(ctx());
+    expect(document.querySelector("[data-ns-duration]")).not.toBeNull();
     NS.hooks.twitch.update(ctx({ active: false }));
-    expect(document.querySelector("[data-ns-seekbar], [data-ns-duration]")).toBeNull();
+    expect(document.querySelector("[data-ns-duration], [data-ns-keep]")).toBeNull();
   });
 });
 
@@ -122,6 +122,7 @@ describe("Twitch seek controls", () => {
     // inserted after the play button's wrapper, inside the left controls
     const bar = document.querySelector('[data-ns-player="skip-bar"]');
     expect(bar.previousElementSibling.classList.contains("play-wrapper")).toBe(true);
+    expect(bar.parentElement.classList.contains("player-controls__left-control-group")).toBe(true);
 
     NS.hooks.twitch.update({ ...c, reason: "navigate", url: "https://www.twitch.tv/somechannel" });
     expect(document.querySelector("[data-ns-player]")).toBeNull();

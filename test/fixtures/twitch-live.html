@@ -13,9 +13,10 @@
       <span class="live-time" data-expect-hidden="hideLiveUptime"><p>2:13:07</p></span>
     </div>
   </main>
-  <div class="right-column">
-    <section class="chat-shell" data-expect-hidden="hideLiveChat">
-      <div class="stream-chat"><div data-test-selector="chat-room-component-layout">Chat</div></div>
-    </section>
+  <!-- Right column as on the video page (same component) -->
+  <div class="right-column right-column--beside" role="complementary" data-a-target="right-column-chat-bar" data-expect-hidden="hideLiveChat">
+    <aside id="live-page-chat" aria-label="Stream-Chat">
+      <div class="chat-shell chat-shell__expanded" data-expect-hidden="hideLiveChat">Chat</div>
+    </aside>
   </div>
 </div>
