@@ -33,7 +33,7 @@ Data collection: the manifest declares `data_collection_permissions: none`.
 
 ## Chrome Web Store
 
-A new item; Chrome has no relation to the Firefox listing.
+Listing: <https://chromewebstore.google.com/detail/hmklilohlfdjlhpmdlidpfklabdopahk> (item ID `hmklilohlfdjlhpmdlidpfklabdopahk`, the value for the `CWS_EXTENSION_ID` secret).
 
 1. Register at <https://chrome.google.com/webstore/devconsole> (one-time
    registration fee).
