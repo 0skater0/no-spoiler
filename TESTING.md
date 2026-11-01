@@ -49,7 +49,8 @@ await browser.storage.sync.get(null);
 
 ### General
 
-- [ ] Fresh install: icon is red, protection is on.
+- [ ] Fresh install: the welcome page opens, the icon shows a red "!". After allowing a site the "!" disappears and the site is protected without reload.
+- [ ] Update from 0.9.x (Firefox): if YouTube access was kept, no welcome page; otherwise the welcome page opens.
 - [ ] Shortcut (Firefox `Ctrl+Alt+U`, Chrome `Alt+Shift+U`) switches protection; icon turns grey/red.
 - [ ] Popup on YouTube shows YouTube settings first, on Twitch Twitch first, elsewhere the overview.
 - [ ] "All settings" opens the options page.

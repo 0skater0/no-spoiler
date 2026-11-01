@@ -15,7 +15,7 @@ What the extension stores, in the browser's extension storage:
 
 What the extension reads:
 
-- the pages of the supported sites (YouTube, and Twitch once you allowed it)
+- the pages of the supported sites you allowed (YouTube, Twitch)
   to hide or change elements on them,
 - the address of the current tab when you open the popup, to show the
   matching settings.

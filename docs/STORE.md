@@ -96,17 +96,59 @@ Google changed the console, its current guide wins.
 
 ## Texts
 
-**Name:** No Spoilers
+### Name
 
-**Summary (≤ 132 characters):**
-Hide spoilers on YouTube and Twitch: time, progress bars, durations, chat, titles and recommendations. Adds jump buttons.
+```
+No Spoilers
+```
 
-**Description:**
+### Summary (AMO ≤ 250 characters; Chrome takes the manifest description)
+
+```
+Hide spoilers on YouTube and Twitch: video time, progress bars, durations, chat, titles and recommendations. Choose what you want to see, and jump through videos without seeing where you are.
+```
+
+### Description, AMO (Markdown)
+
+```
+Watch sports, esports and long streams **without knowing how they end**.
+
+No Spoilers hides what gives the result away, and lets you decide what else you want to see. Everything is switched per site in the toolbar popup and takes effect immediately, without reloading the page.
+
+**YouTube**
+
+- Current time, duration and progress bar in the player
+- Durations and watch progress on thumbnails
+- Comments, description and chapters, recommendations, live chat
+- End screen and end cards, autoplay
+- Optional: video titles, including the browser tab
+
+**Twitch**
+
+- Time and seek bar in the player, seek preview
+- Lengths of videos and clips, watch progress, blurred thumbnails
+- Chat on videos and live streams (collapsed with Twitch's own button)
+- End-of-video recommendations, stream uptime
+- Optional: titles, category, tags, streamer avatar and name, home page carousel, sidebar recommendations
+
+**Jump buttons**
+
+Jump back and forward without seeing where you are: buttons next to play and in the middle of the video. You choose the jump sizes.
+
+**Good to know**
+
+- The whole protection switches on and off with one click on the icon or with `Ctrl+Alt+U`.
+- You choose the sites: the add-on runs only on YouTube and/or Twitch after you allowed them.
+- No data collection, no network requests.
+- Open source: [github.com/0skater0/no-spoiler](https://github.com/0skater0/no-spoiler)
+```
+
+### Description, Chrome (plain text, no Markdown)
 
 ```
 Watch sports, esports and long streams without knowing how they end.
 
-No Spoilers hides what gives the result away, and lets you decide what else you want to see.
+No Spoilers hides what gives the result away, and lets you decide what else you want to see. Everything is switched per site in the toolbar popup and takes effect immediately, without reloading the page.
 
 YOUTUBE
 • Current time, duration and progress bar in the player
@@ -125,19 +167,47 @@ TWITCH
 JUMP BUTTONS
 Jump back and forward without seeing where you are: buttons next to play and in the middle of the video. You choose the jump sizes.
 
-Everything is switched per site in the popup, takes effect immediately without reloading, and the whole protection toggles with one click or a keyboard shortcut.
-
-No data collection, no network requests. Open source: https://github.com/0skater0/no-spoiler
+GOOD TO KNOW
+• The whole protection switches on and off with one click on the icon or with Alt+Shift+U.
+• You choose the sites: the extension runs only on YouTube and/or Twitch after you allowed them.
+• No data collection, no network requests.
+• Open source: https://github.com/0skater0/no-spoiler
 ```
 
-**Single purpose (Chrome):**
+### Single purpose (Chrome)
+
+```
 Hides spoiler-prone page elements (video time, progress bars, durations, chat, titles, recommendations) on video sites and adds jump buttons to their players.
+```
 
-**Permission justifications (Chrome):**
+### Permission justifications (Chrome)
 
-- `storage`: stores the user's settings and the on/off state.
-- `scripting`: registers the Twitch content script after the user granted optional Twitch access, and applies the extension to tabs that were already open at install time.
-- `activeTab`: the popup reads the current tab's address to show that site's settings first.
-- Host permission `*://*.youtube.com/*`: the content script hides elements on YouTube pages.
-- Optional host permission `https://*.twitch.tv/*`: same on Twitch, requested only when the user enables Twitch.
+- `storage`:
+  ```
+  Stores the user's settings and the on/off state.
+  ```
+- `scripting`:
+  ```
+  Registers the content script of a site (YouTube, Twitch) after the user granted the optional access to it, and applies the extension to tabs that were already open.
+  ```
+- `activeTab`:
+  ```
+  The popup reads the current tab's address to show that site's settings first.
+  ```
+- Host permissions:
+  ```
+  The extension requests no host permissions at install time. Access to *://*.youtube.com/* and https://*.twitch.tv/* is optional and requested only when the user enables that site; the content script then hides elements on its pages.
+  ```
 - Remote code: none.
+
+### Graphics
+
+All in `docs/store/`. The popup and settings page in them are screenshots of the real extension UI:
+
+| File | Use |
+|---|---|
+| `promo-small-440x280.png` | Chrome: small promo tile |
+| `promo-marquee-1400x560.png` | Chrome: marquee promo tile |
+| `screenshot-1-popup-1280x800.png`, `screenshot-2-jump-buttons-1280x800.png`, `screenshot-3-settings-1280x800.png` | Chrome and AMO: screenshots (RGB, no alpha) |
+
+Screenshots of the real sites (YouTube, Twitch) have to be taken by hand; resize them to 1280×800 without transparency.

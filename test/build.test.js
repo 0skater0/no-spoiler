@@ -23,6 +23,7 @@ function referencedFiles(m) {
   files.add(m.action.default_popup);
   files.add(m.options_ui.page);
   for (const cs of m.content_scripts || []) [...cs.js, ...cs.css].forEach((f) => files.add(f));
+  files.add("options/options.html");
   (m.background.scripts || []).forEach((f) => files.add(f));
   if (m.background.service_worker) files.add(m.background.service_worker);
   return [...files];
@@ -63,7 +64,8 @@ describe("manifests", () => {
     const platforms = await discoverPlatforms(SRC);
     for (const m of [built.firefox.manifest, built.chrome.manifest]) {
       expect(m.permissions.sort()).toEqual(["activeTab", "scripting", "storage"]);
-      expect(m.host_permissions).toEqual(platforms.filter((p) => p.hostAccess === "required").flatMap((p) => p.matches));
+      const required = platforms.filter((p) => p.hostAccess === "required").flatMap((p) => p.matches);
+      expect(m.host_permissions ?? []).toEqual(required);
       expect(m.optional_host_permissions).toEqual(platforms.filter((p) => p.hostAccess === "optional").flatMap((p) => p.matches));
       expect(m.web_accessible_resources).toBeUndefined();
       // Optional platforms must not have static content scripts (they would imply host access).
@@ -79,6 +81,14 @@ describe("manifests", () => {
       for (const p of JSON.parse(readFileSync(path.join(out, "core/platforms.generated.js"), "utf8").match(/registerPlatforms\(([\s\S]*)\);/)[1])) {
         for (const f of [...p.contentFiles.js, ...p.contentFiles.css]) expect(existsSync(path.join(out, f)), f).toBe(true);
       }
+    }
+  });
+
+  it("asks for no host access at install time", () => {
+    for (const b of ["firefox", "chrome"]) {
+      expect(built[b].manifest.host_permissions, b).toBeUndefined();
+      expect(built[b].manifest.content_scripts, b).toBeUndefined();
+      expect(built[b].manifest.optional_host_permissions, b).toEqual(["*://*.youtube.com/*", "https://*.twitch.tv/*"]);
     }
   });
 

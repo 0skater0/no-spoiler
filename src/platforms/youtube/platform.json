@@ -3,7 +3,7 @@
   "label": "YouTube",
   "matches": ["*://*.youtube.com/*"],
   "order": 10,
-  "hostAccess": "required",
+  "hostAccess": "optional",
   "contentScript": true,
   "options": [
     { "key": "hideVideoTime", "label": "Hide current time and duration in the player", "default": true, "group": "Player" },

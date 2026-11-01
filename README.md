@@ -77,16 +77,15 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide recommended channels / categories in the sidebar | off |
 | Hide stream uptime | on |
 
-Twitch needs access to `twitch.tv`, which the extension asks for when you
-first open the Twitch section in the popup. YouTube access is granted on
-install.
+No Spoilers only runs on the sites you allow: after installing, a welcome
+page lets you grant access to YouTube, Twitch or both.
 
 ## Installation
 
 ### From the stores
 
 - **Firefox:** [addons.mozilla.org](https://addons.mozilla.org/firefox/addon/no-spoilers-youtube/), click *Add to Firefox*.
-- **Chrome:** not published yet.
+- **Chrome:** Chrome Web Store (link follows once the listing is live).
 
 ### Manually (latest build or development)
 
@@ -101,10 +100,12 @@ build it yourself (see [CONTRIBUTING](CONTRIBUTING.md)).
   *Developer mode*, click *Load unpacked* and select that folder (or
   `dist/chrome`).
 
-### Twitch access
+### Site access
 
-YouTube access is granted on install. Twitch is optional: open the popup on
-Twitch (or the Twitch section anywhere) and click *Allow access to twitch.tv*.
+Access to each site is optional and asked for only when you want it. After
+installing, the welcome page opens; click *Allow access* for the sites you
+use. Later you can do the same in the toolbar popup or on the settings page.
+Until at least one site is allowed, the icon shows a red "!".
 
 ## Updating from 0.9.x
 

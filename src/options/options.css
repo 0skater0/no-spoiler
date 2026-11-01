@@ -12,3 +12,11 @@ body.ns-options {
 .ns-options .ns-footer {
   margin-top: 24px;
 }
+
+.ns-welcome {
+  border-color: var(--ns-accent);
+}
+
+.ns-welcome p {
+  margin: 6px 0 0;
+}

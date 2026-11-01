@@ -30,13 +30,13 @@
     }
   }
 
-  /** Platforms whose host access is missing (required ones only matter for the badge). */
-  async function missingRequiredAccess() {
-    const missing = [];
+  /** Platforms the extension may run on right now. */
+  async function grantedPlatforms() {
+    const granted = [];
     for (const p of NS.platforms) {
-      if (p.hostAccess === "required" && !(await hasAccess(p))) missing.push(p);
+      if (await hasAccess(p)) granted.push(p);
     }
-    return missing;
+    return granted;
   }
 
   /* ------------------------------- icon -------------------------------- */
@@ -45,9 +45,10 @@
     const state = await NS.readState();
     await api.action.setIcon({ path: state.active ? ICONS.on : ICONS.off });
     await api.action.setTitle({ title: `No Spoilers: ${state.active ? "on" : "off"}` });
-    const missing = await missingRequiredAccess();
-    await api.action.setBadgeText({ text: missing.length ? "!" : "" });
-    if (missing.length) await api.action.setBadgeBackgroundColor({ color: "#d93025" });
+    // "!" while the extension has access to no site at all, so it does nothing yet.
+    const none = (await grantedPlatforms()).length === 0;
+    await api.action.setBadgeText({ text: none ? "!" : "" });
+    if (none) await api.action.setBadgeBackgroundColor({ color: "#d93025" });
   }
 
   /* --------------------------- content scripts ------------------------- */
@@ -119,11 +120,20 @@
     await updateIcon();
   }
 
+  /** Opens the settings page with the welcome banner, where sites are granted. */
+  function openWelcome() {
+    return api.tabs.create({ url: api.runtime.getURL("options/options.html#welcome") });
+  }
+
   api.runtime.onInstalled.addListener(async (details) => {
     await setup(details);
     if (details.reason === "install" || details.reason === "update") {
       await injectIntoOpenTabs(NS.platforms);
     }
+    // New users choose their sites. After an update, only users who lost all
+    // site access (e.g. a browser that dropped the old grant) see the page.
+    const noAccess = (await grantedPlatforms()).length === 0;
+    if (details.reason === "install" || (details.reason === "update" && noAccess)) await openWelcome();
   });
 
   api.runtime.onStartup.addListener(() => setup());

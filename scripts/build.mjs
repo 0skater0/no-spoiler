@@ -27,8 +27,10 @@ export function createManifest(browser, { base, version, platforms }) {
     ...structuredClone(base),
     version,
     description: description(platforms),
-    host_permissions: required.flatMap((p) => p.matches),
   };
+  // Every current platform is optional (granted from the popup or the welcome
+  // page); "required" stays supported for sites that should work out of the box.
+  if (required.length) m.host_permissions = required.flatMap((p) => p.matches);
   if (optional.length) m.optional_host_permissions = optional.flatMap((p) => p.matches);
 
   // Platforms with required access get a static content script; optional ones

@@ -114,6 +114,7 @@
   }
 
   async function main() {
+    if (location.hash === "#welcome") document.getElementById("welcome").hidden = false;
     document.getElementById("version").textContent = `Version ${api.runtime.getManifest().version}`;
     renderShortcut();
     await ui.mount(document.getElementById("content"), render);
