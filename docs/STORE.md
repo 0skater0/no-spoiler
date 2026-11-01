@@ -48,6 +48,52 @@ A new item; Chrome has no relation to the Firefox listing.
    `https://github.com/0skater0/no-spoiler/blob/main/PRIVACY.md`.
 6. Submit for review.
 
+## Automatic submission from the release workflow
+
+Pushing a tag `vX.Y.Z` builds both packages, creates the GitHub release and,
+if the secrets below exist, submits the new version to both stores. Without
+the secrets these steps are skipped and you upload by hand as described above.
+Add the secrets under *Settings → Secrets and variables → Actions → New
+repository secret*.
+
+Both stores still review every version; the workflow only submits it.
+
+### Firefox
+
+1. AMO Developer Hub → *Tools* → *Manage API Keys* → generate credentials.
+2. Secrets: `AMO_JWT_ISSUER` (the "JWT issuer") and `AMO_JWT_SECRET` (the
+   "JWT secret").
+
+The workflow runs `scripts/publish-firefox.mjs` (`web-ext sign --channel
+listed`) with the changelog section as release notes, and does not wait for
+the review.
+
+### Chrome
+
+The item has to exist first: create it once by hand (see above). Then:
+
+1. In the developer dashboard, note the **item ID** of the extension and
+   your **publisher ID** (shown in the dashboard URL).
+2. In the [Google Cloud console](https://console.cloud.google.com/), create a
+   project, enable the *Chrome Web Store API*, configure the OAuth consent
+   screen (type *External*, add yourself as a user) and **publish** it to
+   production, otherwise the refresh token expires after seven days.
+3. Create an OAuth client ID (type *Web application*, authorised redirect URI
+   `https://developers.google.com/oauthplayground`).
+4. In the [OAuth Playground](https://developers.google.com/oauthplayground):
+   gear icon → *Use your own OAuth credentials* (client ID and secret from
+   step 3), scope `https://www.googleapis.com/auth/chromewebstore`,
+   *Authorize APIs*, *Exchange authorization code for tokens*, copy the
+   refresh token.
+5. Secrets: `CWS_EXTENSION_ID`, `CWS_PUBLISHER_ID`, `CWS_CLIENT_ID`,
+   `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`.
+
+The workflow runs `scripts/publish-chrome.mjs`: upload through the Chrome Web
+Store API v2, then submit for review.
+
+These steps follow the Chrome Web Store API documentation as of 2026; if
+Google changed the console, its current guide wins.
+
 ## Texts
 
 **Name:** No Spoilers

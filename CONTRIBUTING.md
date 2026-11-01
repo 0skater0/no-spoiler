@@ -215,6 +215,8 @@ come with an updated fixture.
    `## [x.y.z] - YYYY-MM-DD`.
 3. Merge to `main`.
 4. Tag the merge commit `vx.y.z` and push the tag. The release workflow runs
-   the tests, builds both zips and creates a GitHub release with the
-   changelog section as notes.
-5. Upload the zips to the stores, see [docs/STORE.md](docs/STORE.md).
+   the tests, builds both zips, creates a GitHub release with the changelog
+   section as notes and, if the store secrets are set, submits the version to
+   addons.mozilla.org and the Chrome Web Store.
+5. Without the secrets, upload the zips by hand. Both are described in
+   [docs/STORE.md](docs/STORE.md).

@@ -42,25 +42,33 @@ jobs:
         run: npm run package
 
       - name: Extract changelog for this version
-        id: changelog
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          NOTES=$(awk -v version="$VERSION" '
-            $0 ~ "^## \\[" version "\\]" { flag=1; next }
-            flag && /^## \[/ { exit }
-            flag && /^\[/ { exit }
-            flag { print }
-          ' CHANGELOG.md)
-          {
-            echo "notes<<NOTES_EOF"
-            echo "$NOTES"
-            echo "NOTES_EOF"
-          } >> "$GITHUB_OUTPUT"
+        run: >
+          node -e "import('./scripts/lib/changelog.mjs').then((m) => require('fs').writeFileSync('release-notes.md',
+          m.changelogSection('CHANGELOG.md', process.env.GITHUB_REF_NAME.slice(1))))"
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
         with:
           files: dist/*.zip
-          body: ${{ steps.changelog.outputs.notes }}
+          body_path: release-notes.md
           draft: false
           prerelease: false
+
+      # Store uploads run only when the secrets are configured
+      # (Settings -> Secrets and variables -> Actions). See docs/STORE.md.
+      - name: Submit to addons.mozilla.org
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        if: env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != ''
+        run: node scripts/publish-firefox.mjs
+
+      - name: Submit to the Chrome Web Store
+        env:
+          CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+        if: env.CWS_EXTENSION_ID != '' && env.CWS_REFRESH_TOKEN != ''
+        run: node scripts/publish-chrome.mjs
