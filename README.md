@@ -1,11 +1,11 @@
 # No Spoilers
 
-![Latest release](https://img.shields.io/github/v/release/0skater0/no-spoiler)
-![Firefox users](https://img.shields.io/amo/users/no-spoilers-youtube?label=Firefox%20users)
-![Chrome users](https://img.shields.io/chrome-web-store/users/hmklilohlfdjlhpmdlidpfklabdopahk?label=Chrome%20users)
-![License](https://img.shields.io/github/license/0skater0/no-spoiler)
-![Open issues](https://img.shields.io/github/issues/0skater0/no-spoiler)
-![Last commit](https://img.shields.io/github/last-commit/0skater0/no-spoiler)
+[![Latest release](https://img.shields.io/github/v/release/0skater0/no-spoiler)](https://github.com/0skater0/no-spoiler/releases/latest)
+[![Firefox users](https://img.shields.io/amo/users/no-spoilers-youtube?label=Firefox%20users)](https://addons.mozilla.org/firefox/addon/no-spoilers-youtube/)
+[![Chrome users](https://img.shields.io/chrome-web-store/users/hmklilohlfdjlhpmdlidpfklabdopahk?label=Chrome%20users)](https://chromewebstore.google.com/detail/hmklilohlfdjlhpmdlidpfklabdopahk)
+[![License](https://img.shields.io/github/license/0skater0/no-spoiler)](https://github.com/0skater0/no-spoiler/blob/main/LICENSE)
+[![Open issues](https://img.shields.io/github/issues/0skater0/no-spoiler)](https://github.com/0skater0/no-spoiler/issues)
+[![Last commit](https://img.shields.io/github/last-commit/0skater0/no-spoiler)](https://github.com/0skater0/no-spoiler/commits/main)
 
 Browser extension for Firefox and Chrome that hides spoilers on video sites:
 video time, progress bars, durations on thumbnails, comments, chat,
@@ -35,10 +35,11 @@ Keyboard shortcut to switch protection on and off: `Ctrl+Alt+U` in Firefox,
 `Ctrl+Alt` shortcuts. Both can be changed: Firefox on the options page,
 Chrome on `chrome://extensions/shortcuts`.
 
-### YouTube
+### Options
 
 | Option | Default |
 |---|---|
+| **YouTube** | |
 | Hide current time and duration in the player | on |
 | Hide progress bar and chapter title | on |
 | Hide end screen and end cards | on |
@@ -53,11 +54,7 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide watch progress bars on thumbnails | on |
 | Hide video titles (watch page, player, thumbnails, browser tab) | off |
 | Hide title tooltips | off |
-
-### Twitch
-
-| Option | Default |
-|---|---|
+| **Twitch** | |
 | Hide current time and duration in the player | on |
 | Hide seek bar | on |
 | Hide seek bar hover preview | on |
