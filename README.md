@@ -40,7 +40,8 @@ Chrome on `chrome://extensions/shortcuts`.
 | Option | Default |
 |---|---|
 | **YouTube** | |
-| Hide current time and duration in the player | on |
+| Hide current time in the player | on |
+| Hide duration in the player | on |
 | Hide progress bar and chapter title | on |
 | Hide end screen and end cards | on |
 | Turn off autoplay (switched back on when protection is turned off) | on |
@@ -55,7 +56,8 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide video titles (watch page, player, thumbnails, browser tab) | off |
 | Hide title tooltips | off |
 | **Twitch** | |
-| Hide current time and duration in the player | on |
+| Hide current time in the player | on |
+| Hide duration in the player | on |
 | Hide seek bar | on |
 | Hide seek bar hover preview | on |
 | Hide recommendations at the end of a video | on |

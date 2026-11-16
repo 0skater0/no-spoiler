@@ -35,6 +35,65 @@ describe("YouTube stylesheet", () => {
   });
 });
 
+describe("YouTube player time", () => {
+  const PARTS = [".ytp-time-display", ".ytp-time-current", ".ytp-time-separator", ".ytp-time-duration"];
+  function visibleParts(keys) {
+    const hidden = render(NS, "youtube", "youtube-watch.html", keys);
+    return PARTS.map((sel) => !hidden(document.querySelector(sel)));
+  }
+
+  it("hides current time and duration independently, the separator with either", () => {
+    expect(visibleParts([])).toEqual([true, true, true, true]);
+    expect(visibleParts(["hideCurrentTime"])).toEqual([true, false, false, true]);
+    expect(visibleParts(["hideDuration"])).toEqual([true, true, false, false]);
+    expect(visibleParts(["hideCurrentTime", "hideDuration"])).toEqual([false, false, false, false]);
+  });
+
+  it("keeps the Live badge visible on live streams while both halves are hidden", () => {
+    for (const inWrapper of [false, true]) {
+      const hidden = render(NS, "youtube", "youtube-watch.html", ["hideCurrentTime", "hideDuration"]);
+      const display = document.querySelector(".ytp-time-display");
+      display.classList.add("ytp-live");
+      const parent = inWrapper ? display.querySelector(".ytp-time-wrapper") : display;
+      parent.insertAdjacentHTML("beforeend", `<button class="ytp-live-badge ytp-button">Live</button>`);
+      expect(hidden(document.querySelector(".ytp-live-badge")), `in wrapper: ${inWrapper}`).toBe(false);
+      for (const sel of [".ytp-time-current", ".ytp-time-separator", ".ytp-time-duration"]) {
+        expect(hidden(document.querySelector(sel)), sel).toBe(true);
+      }
+    }
+  });
+
+  it("masks the time left while the duration is hidden and unmarks it again", () => {
+    mountFixture("youtube-watch.html");
+    const current = document.querySelector(".ytp-time-current");
+    current.textContent = "\u221243:43";
+    NS.hooks.youtube.update(ctx({}, { hideCurrentTime: false, hideDuration: true }));
+    expect(current.hasAttribute("data-ns-remaining")).toBe(true);
+    expect(document.querySelectorAll("[data-ns-remaining]")).toHaveLength(1);
+
+    current.textContent = "1:23";
+    NS.hooks.youtube.update(ctx({ reason: "mutation" }, { hideCurrentTime: false, hideDuration: true }));
+    expect(current.hasAttribute("data-ns-remaining")).toBe(false);
+
+    current.textContent = "-43:43";
+    NS.hooks.youtube.update(ctx({ reason: "mutation" }, { hideCurrentTime: false, hideDuration: true }));
+    expect(current.hasAttribute("data-ns-remaining")).toBe(true);
+    NS.hooks.youtube.update(ctx({}, { hideCurrentTime: false, hideDuration: false }));
+    expect(current.hasAttribute("data-ns-remaining")).toBe(false);
+  });
+
+  it("hides the marked time left only with hide duration on", () => {
+    const remainingHidden = (keys) => {
+      const hidden = render(NS, "youtube", "youtube-watch.html", keys, { runJs: false });
+      const current = document.querySelector(".ytp-time-current");
+      current.setAttribute("data-ns-remaining", "");
+      return hidden(current);
+    };
+    expect(remainingHidden(["hideDuration"])).toBe(true);
+    expect(remainingHidden([])).toBe(false);
+  });
+});
+
 describe("YouTube thumbnail badges", () => {
   it("keeps non-duration badges and re-evaluates recycled elements", () => {
     mountFixture("youtube-home.html");

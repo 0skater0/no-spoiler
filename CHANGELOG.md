@@ -4,6 +4,11 @@ All notable changes to this extension go here. The format is based on [Keep a Ch
 
 ## [Unreleased]
 
+### Changed
+
+- YouTube and Twitch: the current time and the duration in the player are now two separate options, so you can see how far into a video you are without seeing how long it is. Both are on by default, and your previous setting carries over to both. On YouTube, the time left, shown after clicking the time, counts as duration.
+- YouTube: on live streams the "Live" button stays visible while the player time is hidden, so you can always jump to the live picture.
+
 ## [1.1.0] - 2026-11-01
 
 ### Changed

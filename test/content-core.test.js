@@ -58,7 +58,7 @@ describe("content runtime", () => {
     rt.start();
     const cls = document.documentElement.classList;
     expect(cls.contains("ns-on")).toBe(true);
-    expect(cls.contains("ns-youtube-hideVideoTime")).toBe(true);
+    expect(cls.contains("ns-youtube-hideCurrentTime")).toBe(true);
     expect(cls.contains("ns-youtube-skipButtons")).toBe(false);
     rt.stop();
   });

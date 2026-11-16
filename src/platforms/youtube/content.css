@@ -5,13 +5,35 @@
  * Several selectors per rule are fallbacks for older and newer YouTube layouts.
  */
 
-/* Player: current time and duration */
-html.ns-on.ns-youtube-hideVideoTime .ytp-time-display,
-html.ns-on.ns-youtube-hideVideoTime .ytp-time-wrapper,
-html.ns-on.ns-youtube-hideVideoTime .ytp-time-contents,
-html.ns-on.ns-youtube-hideVideoTime .ytp-time-current,
-html.ns-on.ns-youtube-hideVideoTime .ytp-time-duration {
+/*
+ * Player: current time and duration. Each half hides on its own and takes
+ * the "/" separator with it; with both on, the whole display goes. On live
+ * streams the display also holds the "Live" badge, the only way back to the
+ * live edge, so there only the time parts go.
+ */
+html.ns-on.ns-youtube-hideCurrentTime .ytp-time-current,
+html.ns-on.ns-youtube-hideCurrentTime .ytp-time-separator,
+html.ns-on.ns-youtube-hideDuration .ytp-time-duration,
+html.ns-on.ns-youtube-hideDuration .ytp-time-separator,
+html.ns-on.ns-youtube-hideCurrentTime.ns-youtube-hideDuration .ytp-time-display:not(.ytp-live),
+html.ns-on.ns-youtube-hideCurrentTime.ns-youtube-hideDuration .ytp-time-wrapper:not(.ytp-live *),
+html.ns-on.ns-youtube-hideCurrentTime.ns-youtube-hideDuration .ytp-time-contents:not(.ytp-live *) {
   display: none !important;
+}
+
+/*
+ * Time left ("-8:37", after clicking the time display) gives the duration
+ * away. The content script marks it; a placeholder keeps the display
+ * clickable, so the user can switch back to the elapsed time.
+ */
+html.ns-on.ns-youtube-hideDuration .ytp-time-display [data-ns-remaining] {
+  font-size: 0 !important;
+}
+
+html.ns-on.ns-youtube-hideDuration .ytp-time-display [data-ns-remaining]::after {
+  content: "Time left hidden";
+  font-size: 13px;
+  font-style: italic;
 }
 
 /* Player: progress bar, chapter title, heat map, seek preview */

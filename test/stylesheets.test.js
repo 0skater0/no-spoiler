@@ -25,7 +25,7 @@ describe("platform stylesheets", () => {
     it(`${id}: hiding rules are scoped to the active class`, () => {
       const rules = css.replace(/\/\*[\s\S]*?\*\//g, "").split("}");
       for (const r of rules) {
-        if (!/display:\s*none|filter:|font-size:\s*0\b|opacity:\s*0\s*(!|;)/.test(r)) continue;
+        if (!/display:\s*none|visibility:\s*hidden|filter:|font-size:\s*0\b|opacity:\s*0\s*(!|;)/.test(r)) continue;
         const selectors = r.split("{")[0].split(/,(?![^()]*\))/).map((s) => s.trim());
         for (const s of selectors) {
           const scoped = s.startsWith(`html.ns-on.ns-${id}-`) || s.startsWith("html:not(");

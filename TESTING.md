@@ -43,8 +43,22 @@ await browser.storage.sync.set({ showVideoTime: true, showComments: false, enabl
 await browser.storage.local.set({ YouTubeNoSpoilersActive: true });
 await NoSpoiler.background.setup({ reason: "update", previousVersion: "0.9.9" });
 await browser.storage.sync.get(null);
-// expected: ns.schema 2, youtube.hideVideoTime false, youtube.hideComments true,
-//           youtube.disableAutoplay false, youtube.skipButtons true; old keys gone
+// expected: ns.schema 3, youtube.hideCurrentTime false, youtube.hideDuration false,
+//           youtube.hideComments true, youtube.disableAutoplay false,
+//           youtube.skipButtons true; old keys gone
+```
+
+### Update from 1.1.x (split time options)
+
+Via the background console (in Chrome, use `chrome` instead of `browser`):
+
+```js
+await browser.storage.sync.clear();
+await browser.storage.sync.set({ "ns.schema": 2, "youtube.hideVideoTime": false, "twitch.hidePlayerTime": true });
+await NoSpoiler.background.setup({ reason: "update", previousVersion: "1.1.0" });
+await browser.storage.sync.get(null);
+// expected: ns.schema 3, youtube.hideCurrentTime false, youtube.hideDuration false,
+//           twitch.hideCurrentTime true, twitch.hideDuration true; old keys gone
 ```
 
 ### General
@@ -62,6 +76,10 @@ await browser.storage.sync.get(null);
 Watch page (`/watch?v=…`), regular video and a live stream or premiere:
 
 - [ ] Time display hidden; the volume and buttons around it still visible.
+- [ ] Only "Hide duration" on: the current time is visible, no "/" and no duration. Clicking the time to show the time left shows "Time left hidden"; clicking again shows the current time. The time left ("-8:37") may flash for up to about 150 ms after the click before it is replaced, because the page observer is throttled; longer than that is a bug.
+- [ ] Only "Hide current time" on: the duration is visible, no "/" before it.
+- [ ] Live stream with both on (default): no time, but the "Live" badge is visible; when behind the live edge, clicking it jumps to the live picture.
+- [ ] Live stream with only one of the two on: nothing looks broken next to the "Live" badge.
 - [ ] Progress bar, chapter title and hover preview hidden.
 - [ ] End screen, end cards and the up-next overlay hidden at the end of a video.
 - [ ] Autoplay switched off while active, switched back on when protection is turned off (only if it was on before).
@@ -81,6 +99,7 @@ First grant access in the popup.
 Video page (`/videos/<id>`):
 
 - [ ] Current time and duration hidden.
+- [ ] Only "Hide duration" on: the current time is visible on its usual side, the duration not. Only "Hide current time" on: the reverse.
 - [ ] Seek bar shows a neutral track; clicking and dragging still seeks.
 - [ ] No preview or time when hovering the seek bar.
 - [ ] Chat replay hidden.

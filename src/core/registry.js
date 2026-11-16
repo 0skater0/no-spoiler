@@ -18,7 +18,7 @@
     schema: "ns.schema", // storage.sync, settings schema version
   });
 
-  NS.SCHEMA_VERSION = 2;
+  NS.SCHEMA_VERSION = 3;
   NS.CLASS_PREFIX = "ns-";
   NS.ACTIVE_CLASS = "ns-on";
 

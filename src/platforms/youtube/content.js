@@ -1,6 +1,7 @@
 /*
  * YouTube: the parts CSS cannot do.
  * - Marks thumbnail badges that are not durations, so CSS can show them again.
+ * - Marks the time left in the player, which gives the duration away.
  * - Inserts skip buttons and the centre overlay (core/player-controls.js).
  * - Switches autoplay off and back on.
  * - Replaces the tab title and removes title tooltips.
@@ -20,6 +21,7 @@
     // Old layouts without a dedicated badge element: plain text inside the thumbnail
     badgeText: ["ytd-thumbnail #overlays span", "ytd-thumbnail #overlays div"],
     playButton: [".html5-video-player .ytp-play-button"],
+    timeDisplay: [".ytp-time-display"],
     player: ["#movie_player", ".html5-video-player"],
     tooltips: [
       "#video-title[title]",
@@ -32,6 +34,7 @@
 
   const KEEP = "data-ns-keep";
   const DURATION = "data-ns-duration";
+  const REMAINING = "data-ns-remaining";
   const AUTOPLAY_RESTORE_KEY = "youtube.autoplayRestore";
 
   /* -------------------------- thumbnail badges ------------------------- */
@@ -53,6 +56,20 @@
   function unmarkBadges(doc) {
     dom.clearAttr(doc, KEEP);
     dom.clearAttr(doc, DURATION);
+  }
+
+  /* ----------------------------- time left ----------------------------- */
+
+  // Matched by text, not by class: the time left may reuse the current time element.
+  function markRemainingTime(doc) {
+    for (const display of dom.queryAll(doc, SEL.timeDisplay)) {
+      for (const el of display.querySelectorAll("*")) {
+        if (el.children.length > 0) continue;
+        const text = el.textContent.trim();
+        const remaining = /^[-\u2212]/.test(text) && dom.isDuration(text.slice(1));
+        el.toggleAttribute(REMAINING, remaining);
+      }
+    }
   }
 
   /* --------------------------- seek controls --------------------------- */
@@ -144,6 +161,9 @@
       if (ctx.active && opts.hideThumbnailDurations) markBadges(doc);
       else if (ctx.reason === "state") unmarkBadges(doc);
 
+      if (ctx.active && opts.hideDuration) markRemainingTime(doc);
+      else if (ctx.reason === "state") dom.clearAttr(doc, REMAINING);
+
       if (ctx.active && opts.skipButtons) ensureSkipButtons(doc, opts.skipButtonSteps);
       else if (ctx.reason === "state") NS.player.remove(doc, "skip-bar");
 
@@ -162,5 +182,5 @@
   });
 
   // Exposed for tests.
-  NS.youtube = { SEL, markBadges, ensureSkipButtons, ensureOverlay, AUTOPLAY_RESTORE_KEY, TAB_TITLE };
+  NS.youtube = { SEL, markBadges, markRemainingTime, ensureSkipButtons, ensureOverlay, AUTOPLAY_RESTORE_KEY, TAB_TITLE };
 })(globalThis);

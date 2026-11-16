@@ -50,6 +50,21 @@ describe("Twitch stylesheet", () => {
   });
 });
 
+describe("Twitch player time", () => {
+  const PARTS = [".vod-seekbar-time-labels", '[data-a-target="player-seekbar-current-time"]', '[data-a-target="player-seekbar-duration"]'];
+  function visibleParts(keys) {
+    const hidden = render(NS, "twitch", "twitch-vod.html", keys, { url: "https://www.twitch.tv/videos/123456" });
+    return PARTS.map((sel) => !hidden(document.querySelector(sel)));
+  }
+
+  it("hides current time and duration independently", () => {
+    expect(visibleParts([])).toEqual([true, true, true]);
+    expect(visibleParts(["hideCurrentTime"])).toEqual([true, false, true]);
+    expect(visibleParts(["hideDuration"])).toEqual([true, true, false]);
+    expect(visibleParts(["hideCurrentTime", "hideDuration"])).toEqual([false, false, false]);
+  });
+});
+
 describe("Twitch page type", () => {
   it("detects videos, clips and other pages", () => {
     const { pageType } = NS.twitch;

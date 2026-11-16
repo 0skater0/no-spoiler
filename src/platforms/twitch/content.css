@@ -9,10 +9,17 @@
  * names often; the attributes are more stable.
  */
 
-/* Player: current time and duration (the label row above the seek bar) */
-html.ns-on.ns-twitch-hidePlayerTime [data-a-target="player-seekbar-current-time"],
-html.ns-on.ns-twitch-hidePlayerTime [data-a-target="player-seekbar-duration"],
-html.ns-on.ns-twitch-hidePlayerTime .vod-seekbar-time-labels {
+/*
+ * Player: current time and duration (the label row above the seek bar).
+ * The row has no separator; it goes only when both labels are hidden.
+ * visibility keeps the remaining label on its side of the row.
+ */
+html.ns-on.ns-twitch-hideCurrentTime [data-a-target="player-seekbar-current-time"],
+html.ns-on.ns-twitch-hideDuration [data-a-target="player-seekbar-duration"] {
+  visibility: hidden !important;
+}
+
+html.ns-on.ns-twitch-hideCurrentTime.ns-twitch-hideDuration .vod-seekbar-time-labels {
   display: none !important;
 }
 

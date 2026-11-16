@@ -7,6 +7,7 @@ import { SRC } from "./env.js";
 function isHidingRule(style) {
   return (
     style.getPropertyValue("display") === "none" ||
+    style.getPropertyValue("visibility") === "hidden" ||
     style.getPropertyValue("opacity") === "0" ||
     /^0(px)?$/.test(style.getPropertyValue("font-size")) ||
     /blur\(/.test(style.getPropertyValue("filter"))

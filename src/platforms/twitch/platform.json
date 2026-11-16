@@ -6,7 +6,8 @@
   "hostAccess": "optional",
   "contentScript": true,
   "options": [
-    { "key": "hidePlayerTime", "label": "Hide current time and duration in the player", "default": true, "group": "Player" },
+    { "key": "hideCurrentTime", "label": "Hide current time in the player", "default": true, "group": "Player" },
+    { "key": "hideDuration", "label": "Hide duration in the player", "default": true, "group": "Player" },
     { "key": "hideSeekbar", "label": "Hide seek bar", "default": true, "group": "Player" },
     { "key": "hideSeekbarPreview", "label": "Hide seek bar hover preview", "default": true, "group": "Player" },
     { "key": "hideEndRecommendations", "label": "Hide recommendations at the end of a video", "default": true, "group": "Player" },

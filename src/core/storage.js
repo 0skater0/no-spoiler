@@ -1,9 +1,10 @@
 /*
- * Settings storage and migration from the MV2 version (0.9.x).
+ * Settings storage and migration from the MV2 version (0.9.x) and from
+ * older schema versions.
  *
- * Layout (schema 2), flat keys so concurrent writers never overwrite each other:
+ * Layout (schema 3), flat keys so concurrent writers never overwrite each other:
  *   storage.local  ns.active                  master switch
- *   storage.sync   ns.schema = 2
+ *   storage.sync   ns.schema = 3
  *                  <platform>.enabled         platform switch
  *                  <platform>.<option>        option value
  */
@@ -29,6 +30,17 @@
   ]);
   NS.LEGACY_SYNC_OBSOLETE = Object.freeze(["originalAutoplay", "noSpoilerHotkey"]);
   NS.LEGACY_LOCAL_ACTIVE = "YouTubeNoSpoilersActive";
+
+  /**
+   * Options that were renamed or split. `since` is the schema version that
+   * introduced the new keys; every target gets the old key's stored value.
+   * The 0.9.x map above yields schema 2 keys, so its results pass through
+   * these renames as well.
+   */
+  NS.RENAMED_OPTIONS = Object.freeze([
+    { since: 3, from: "youtube.hideVideoTime", to: ["youtube.hideCurrentTime", "youtube.hideDuration"] },
+    { since: 3, from: "twitch.hidePlayerTime", to: ["twitch.hideCurrentTime", "twitch.hideDuration"] },
+  ]);
 
   /** Major version below 1 means the MV2 add-on. */
   NS.isLegacyVersion = function (version) {
@@ -79,6 +91,19 @@
       if (NS.LEGACY_LOCAL_ACTIVE in local) localRemove.push(NS.LEGACY_LOCAL_ACTIVE);
     } else if (!(NS.KEYS.active in local)) {
       localSet[NS.KEYS.active] = true; // fresh install: protection on
+    }
+
+    const storedSchema = typeof sync[NS.KEYS.schema] === "number" ? sync[NS.KEYS.schema] : 0;
+    for (const r of NS.RENAMED_OPTIONS) {
+      if (r.since <= storedSchema) continue;
+      const fromLegacy = r.from in syncSet;
+      if (!fromLegacy && !(r.from in sync)) continue;
+      const value = fromLegacy ? syncSet[r.from] : sync[r.from];
+      for (const to of r.to) {
+        if (!(to in sync)) syncSet[to] = value;
+      }
+      delete syncSet[r.from];
+      if (r.from in sync) syncRemove.push(r.from);
     }
 
     return { syncSet, syncRemove, localSet, localRemove };

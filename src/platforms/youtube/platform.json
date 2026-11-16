@@ -6,7 +6,8 @@
   "hostAccess": "optional",
   "contentScript": true,
   "options": [
-    { "key": "hideVideoTime", "label": "Hide current time and duration in the player", "default": true, "group": "Player" },
+    { "key": "hideCurrentTime", "label": "Hide current time in the player", "default": true, "group": "Player" },
+    { "key": "hideDuration", "label": "Hide duration in the player", "default": true, "group": "Player" },
     { "key": "hideProgressBar", "label": "Hide progress bar and chapter title", "default": true, "group": "Player" },
     { "key": "hideEndcards", "label": "Hide end screen and end cards", "default": true, "group": "Player" },
     { "key": "disableAutoplay", "label": "Turn off autoplay", "default": true, "group": "Player" },

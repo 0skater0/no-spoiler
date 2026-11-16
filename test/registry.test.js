@@ -47,7 +47,7 @@ describe("state", () => {
     const s = NS.defaultState();
     expect(s.active).toBe(true);
     expect(s.platforms.youtube.enabled).toBe(true);
-    expect(s.platforms.youtube.options.hideVideoTime).toBe(true);
+    expect(s.platforms.youtube.options.hideCurrentTime).toBe(true);
     expect(s.platforms.youtube.options.skipButtons).toBe(false);
   });
 
@@ -72,8 +72,8 @@ describe("state", () => {
     const yt = NS.getPlatform("youtube");
     const s = NS.defaultState();
     s.platforms.youtube.options = Object.fromEntries(yt.options.map((o) => [o.key, false]));
-    s.platforms.youtube.options.hideVideoTime = true;
-    expect(NS.classesFor(yt, s)).toEqual(["ns-on", "ns-youtube-hideVideoTime"]);
+    s.platforms.youtube.options.hideCurrentTime = true;
+    expect(NS.classesFor(yt, s)).toEqual(["ns-on", "ns-youtube-hideCurrentTime"]);
     s.platforms.youtube.enabled = false;
     expect(NS.classesFor(yt, s)).toEqual([]);
     s.platforms.youtube.enabled = true;

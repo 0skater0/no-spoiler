@@ -14,10 +14,11 @@
               <button class="ytp-play-button ytp-button" aria-label="Pause (k)" data-expect-visible></button>
               <a class="ytp-next-button ytp-button" data-expect-visible></a>
               <span class="ytp-volume-area" data-expect-visible></span>
-              <div class="ytp-time-display notranslate" data-expect-hidden="hideVideoTime">
+              <div class="ytp-time-display notranslate">
                 <span class="ytp-time-wrapper">
-                  <span class="ytp-time-current">1:23</span><span class="ytp-time-separator"> / </span
-                  ><span class="ytp-time-duration">45:06</span>
+                  <span class="ytp-time-current" data-expect-hidden="hideCurrentTime">1:23</span
+                  ><span class="ytp-time-separator" data-expect-hidden="hideCurrentTime hideDuration"> / </span
+                  ><span class="ytp-time-duration" data-expect-hidden="hideDuration">45:06</span>
                 </span>
               </div>
               <div class="ytp-chapter-container" data-expect-hidden="hideProgressBar">
