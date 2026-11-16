@@ -86,6 +86,34 @@ Watch page (`/watch?v=…`), regular video and a live stream or premiere:
 - [ ] Skip buttons appear once next to the play button; still once after navigating to another video, entering and leaving fullscreen and the miniplayer.
 - [ ] Comments, description, chapter panel, recommendations and live chat hidden.
 
+Live from the start (switch on "Start live streams from the beginning"):
+
+Do these checks with all other settings at their defaults, so with the
+progress bar hidden. The jump is calculated from the progress bar's
+`aria-valuenow`, and that has to keep updating while the bar is
+`display: none`. The extension also needs `ytp-live` on the time display
+by the time the video has loaded its metadata, also after navigating
+without reload. Both can be checked in the page console (F12):
+
+```js
+// changes every second on a live stream, with the progress bar hidden
+document.querySelector(".ytp-progress-bar").getAttribute("aria-valuenow");
+// run on the home page, then click a live stream: expected true
+document.addEventListener("loadedmetadata", () => console.log("ytp-live:", !!document.querySelector("#movie_player .ytp-time-display.ytp-live")), true);
+```
+
+- [ ] Open a stream that is live right now and can be rewound: the video area stays dark and silent for a moment, then playback starts at the earliest point you can rewind to, not at the live edge (switch "Hide progress bar" off afterwards to check the position). No live picture or sound before that.
+- [ ] Same via a channel's `/live` URL and after clicking a live stream from the home page (navigation without reload).
+- [ ] Live stream A, then a regular video, then back to A without reload: A starts from the beginning again.
+- [ ] Clicking "Live" or seeking afterwards works and is not undone; quality changes do not jump back.
+- [ ] A stream running longer than YouTube's rewind window starts at the oldest available point.
+- [ ] A pre-roll ad plays normally; the stream itself then starts from the beginning.
+- [ ] Regular videos, finished streams (VODs) and premieres play as usual; a live stream without rewind plays live.
+- [ ] Option off: live streams open at the live edge. Switching the option on while watching does not jump.
+- [ ] Muted before opening the stream: stays muted afterwards. Muting (`m`) while the video is dark: stays muted after the jump. Not muted: sound comes back at the previous volume after the jump, the volume slider shows that volume, and the next video plays at it too.
+- [ ] Premiere in another interface language (e.g. Spanish, Japanese): plays as usual. Languages whose premiere label is unknown start from the beginning like a live stream.
+- [ ] Reload the extension while a live stream is dark (`about:debugging` or `chrome://extensions`): the video does not stay dark or silent.
+
 Lists (home, search, channel videos, recommendations):
 
 - [ ] No durations on thumbnails; LIVE, SHORTS and "New" badges still visible.

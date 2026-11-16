@@ -11,6 +11,7 @@
     { "key": "hideProgressBar", "label": "Hide progress bar and chapter title", "default": true, "group": "Player" },
     { "key": "hideEndcards", "label": "Hide end screen and end cards", "default": true, "group": "Player" },
     { "key": "disableAutoplay", "label": "Turn off autoplay", "default": true, "group": "Player" },
+    { "key": "liveFromStart", "label": "Start live streams from the beginning (as far back as YouTube allows)", "default": false, "group": "Player" },
     { "key": "skipButtons", "label": "Jump buttons in the player bar, next to play", "default": false, "group": "Jump buttons" },
     { "key": "skipButtonSteps", "label": "Jump sizes in the player bar", "type": "steps", "choices": [5, 10, 30, 60, 120, 300, 600, 900, 1800, 3600], "default": [300, 600], "dependsOn": "skipButtons", "group": "Jump buttons" },
     { "key": "overlayControls", "label": "Jump buttons in the middle of the video (on hover)", "default": false, "group": "Jump buttons" },

@@ -58,6 +58,12 @@ html.ns-on.ns-youtube-hideEndcards .ytp-fullscreen-grid {
   display: none !important;
 }
 
+/* Player: covers a live stream until the content script has rewound it */
+html.ns-on.ns-youtube-liveFromStart .html5-video-player[data-ns-live-cover] video,
+html.ns-on.ns-youtube-liveFromStart .html5-video-player[data-ns-live-cover] .ytp-caption-window-container {
+  opacity: 0 !important;
+}
+
 /* Watch page: comments */
 html.ns-on.ns-youtube-hideComments ytd-comments#comments,
 html.ns-on.ns-youtube-hideComments ytd-watch-flexy #comments {

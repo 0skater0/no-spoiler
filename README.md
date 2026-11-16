@@ -45,6 +45,7 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide progress bar and chapter title | on |
 | Hide end screen and end cards | on |
 | Turn off autoplay (switched back on when protection is turned off) | on |
+| Start live streams from the beginning (as far back as YouTube allows, often the last 12 hours) | off |
 | Jump buttons in the player bar, next to play (sizes selectable, default 5 and 10 min) | off |
 | Jump buttons in the middle of the video on hover (sizes selectable, default 1, 5 and 10 min) | off |
 | Hide comments | on |

@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { hidingSelectors, isHidden, setHtmlClasses } from "./helpers/css.js";
 import { fixture, flush, loadExtension, mountFixture } from "./helpers/env.js";
 import { checkFixture, coveredOptions, render } from "./helpers/fixture-check.js";
 
@@ -8,7 +9,7 @@ beforeEach(async () => {
 });
 
 const FIXTURES = ["youtube-watch.html", "youtube-home.html"];
-const JS_ONLY = ["disableAutoplay", "skipButtons", "overlayControls", "hideTooltips", "skipButtonSteps", "overlaySteps"];
+const JS_ONLY = ["disableAutoplay", "skipButtons", "overlayControls", "hideTooltips", "skipButtonSteps", "overlaySteps", "liveFromStart"];
 
 function ctx(overrides = {}, optionOverrides = {}) {
   const state = NS.defaultState();
@@ -247,5 +248,365 @@ describe("YouTube titles", () => {
     expect(document.querySelector("#video-title[title]")).toBeNull();
     NS.hooks.youtube.update(ctx({}, { hideTooltips: false }));
     expect(document.querySelector("#video-title").getAttribute("title")).toBe("A video");
+  });
+});
+
+describe("YouTube live from the start", () => {
+  // Values as measured on a live stream with a 12 h rewind window: the media
+  // timeline starts one hour before the window, the seek bar counts from the
+  // stream's first second.
+  const LIVE_EDGE = 46800;
+  const WINDOW = { min: 9451000, now: 9494200 };
+  const WINDOW_START = LIVE_EDGE - (WINDOW.now - WINDOW.min);
+
+  let pageId = 0;
+  afterEach(() => vi.useRealTimers());
+
+  /** Watch page fixture in the state the player renders for a live stream. */
+  function mountLive({ live = true, badge = "Live", window = WINDOW } = {}) {
+    history.pushState({}, "", `/watch?v=live${++pageId}`);
+    mountFixture("youtube-watch.html");
+    const display = document.querySelector(".ytp-time-display");
+    if (live) {
+      display.classList.add("ytp-live");
+      display.insertAdjacentHTML("beforeend", `<button class="ytp-live-badge ytp-button">${badge}</button>`);
+    }
+    const bar = document.querySelector(".ytp-progress-bar");
+    if (window) {
+      bar.setAttribute("aria-valuemin", String(window.min));
+      bar.setAttribute("aria-valuenow", String(window.now));
+    }
+    return fakeVideo(document.querySelector("#movie_player video"));
+  }
+
+  /** Replaces the media state of a jsdom <video>, which cannot play anything. */
+  function fakeVideo(el) {
+    const media = { el, readyState: 0, seeking: false, time: 0, muted: false, volume: 0.8, seeks: [] };
+    const prop = (name, get, set) => Object.defineProperty(el, name, { configurable: true, get, set });
+    prop("readyState", () => media.readyState);
+    prop("seeking", () => media.seeking);
+    prop("muted", () => media.muted, (v) => (media.muted = v));
+    prop("volume", () => media.volume, (v) => (media.volume = v));
+    prop("seekable", () => ({ length: 1, start: () => 0, end: () => LIVE_EDGE + 3600 }));
+    prop("currentTime", () => media.time, (t) => {
+      media.seeks.push(t);
+      media.time = t;
+      media.seeking = true;
+    });
+    return media;
+  }
+
+  const fire = (media, type) => media.el.dispatchEvent(new Event(type));
+
+  /** What YouTube does on load: metadata, then its own seek to the live edge, then the first frame. */
+  function loadToLiveEdge(media) {
+    fire(media, "loadstart");
+    media.readyState = 1;
+    fire(media, "loadedmetadata");
+    media.time = LIVE_EDGE;
+    media.readyState = 4;
+    fire(media, "seeked");
+    fire(media, "playing");
+  }
+
+  function landSeek(media) {
+    media.seeking = false;
+    fire(media, "seeked");
+  }
+
+  const covered = () => document.querySelector("#movie_player").hasAttribute(NS.youtube.LIVE_COVER);
+  const enable = (on = true) => NS.hooks.youtube.update(ctx({}, { liveFromStart: on }));
+
+  /** Player or user sets the volume; the event arrives like in a browser. */
+  function setVolume(media, value) {
+    media.volume = value;
+    fire(media, "volumechange");
+  }
+
+  it("covers and silences a live stream, seeks to the start of the rewind window and uncovers", () => {
+    const media = mountLive();
+    enable();
+    fire(media, "loadstart");
+    expect(covered()).toBe(true);
+    expect(media.volume).toBe(0);
+
+    media.readyState = 1;
+    fire(media, "loadedmetadata");
+    expect(media.seeks).toEqual([]); // the player's own seek to the live edge comes first
+
+    media.time = LIVE_EDGE;
+    media.readyState = 4;
+    fire(media, "seeked");
+    expect(media.seeks).toEqual([WINDOW_START]);
+    expect(covered()).toBe(true);
+
+    landSeek(media);
+    expect(covered()).toBe(false);
+    expect(media.volume).toBe(0.8);
+    expect(media.muted).toBe(false);
+  });
+
+  it("stays covered until a frame of the new position is ready", () => {
+    const media = mountLive();
+    enable();
+    loadToLiveEdge(media);
+    media.readyState = 1;
+    landSeek(media);
+    expect(covered()).toBe(true);
+    media.readyState = 4;
+    fire(media, "playing");
+    expect(covered()).toBe(false);
+  });
+
+  it("silences again when the player restores its volume while loading and gives that volume back", () => {
+    const media = mountLive();
+    enable();
+    fire(media, "loadstart");
+    setVolume(media, 0.5); // the player applies the saved volume
+    expect(media.volume).toBe(0);
+    loadToLiveEdge(media);
+    landSeek(media);
+    expect(media.volume).toBe(0.5);
+  });
+
+  it("leaves mute to the user: muting during the cover stays muted", () => {
+    const media = mountLive();
+    enable();
+    fire(media, "loadstart");
+    media.muted = true; // the user presses "m" while the video is dark
+    fire(media, "volumechange");
+    loadToLiveEdge(media);
+    landSeek(media);
+    expect(covered()).toBe(false);
+    expect(media.muted).toBe(true);
+    expect(media.volume).toBe(0.8);
+  });
+
+  it("starts at the first second of a stream that is younger than the rewind window", () => {
+    const media = mountLive({ window: { min: 0, now: 2874 } });
+    enable();
+    fire(media, "loadstart");
+    media.readyState = 4;
+    media.time = 2878;
+    fire(media, "loadeddata");
+    expect(media.seeks).toEqual([4]);
+  });
+
+  it("does nothing while the option is off", () => {
+    const media = mountLive();
+    enable(false);
+    loadToLiveEdge(media);
+    expect(covered()).toBe(false);
+    expect(media.volume).toBe(0.8);
+    expect(media.seeks).toEqual([]);
+  });
+
+  it("does not jump back when the option is switched on while the stream is already showing", () => {
+    const media = mountLive();
+    enable(false);
+    loadToLiveEdge(media);
+    enable(true);
+    fire(media, "playing");
+    expect(media.seeks).toEqual([]);
+    expect(covered()).toBe(false);
+  });
+
+  it("leaves videos, ended streams and premieres alone", () => {
+    for (const setup of [{ live: false }, { badge: "Premiere" }]) {
+      const media = mountLive(setup);
+      enable();
+      loadToLiveEdge(media);
+      expect(covered(), JSON.stringify(setup)).toBe(false);
+      expect(media.volume).toBe(0.8);
+      expect(media.seeks).toEqual([]);
+    }
+  });
+
+  it("plays a live stream without rewind window normally", () => {
+    const media = mountLive({ window: { min: 9494200, now: 9494200 } });
+    enable();
+    loadToLiveEdge(media);
+    expect(media.seeks).toEqual([]);
+    expect(covered()).toBe(false);
+    expect(media.volume).toBe(0.8);
+  });
+
+  it("seeks once per page and never fights the user afterwards", () => {
+    const media = mountLive();
+    enable();
+    loadToLiveEdge(media);
+    landSeek(media);
+    expect(media.seeks).toHaveLength(1);
+
+    // The user clicks "Live", the player reloads the media for the same page.
+    media.time = LIVE_EDGE;
+    fire(media, "seeked");
+    NS.hooks.youtube.update(ctx({ reason: "mutation" }, { liveFromStart: true }));
+    loadToLiveEdge(media);
+    expect(media.seeks).toHaveLength(1);
+    expect(covered()).toBe(false);
+
+    // Navigating to another live stream (YouTube keeps the same player).
+    history.pushState({}, "", "/watch?v=other");
+    loadToLiveEdge(media);
+    expect(media.seeks).toEqual([WINDOW_START, WINDOW_START]);
+  });
+
+  it("gives the player back after the timeout if the seek does not land", () => {
+    vi.useFakeTimers();
+    const media = mountLive();
+    enable();
+    loadToLiveEdge(media);
+    expect(covered()).toBe(true);
+    vi.advanceTimersByTime(NS.youtube.LIVE_COVER_TIMEOUT_MS);
+    expect(covered()).toBe(false);
+    expect(media.volume).toBe(0.8);
+    loadToLiveEdge(media);
+    expect(media.seeks).toHaveLength(1);
+  });
+
+  it("keeps the video muted if it was muted before", () => {
+    const media = mountLive();
+    media.muted = true;
+    enable();
+    loadToLiveEdge(media);
+    landSeek(media);
+    expect(media.muted).toBe(true);
+  });
+
+  it("does not cover ads and handles the stream after them", () => {
+    const media = mountLive();
+    enable();
+    const playerEl = document.querySelector("#movie_player");
+    playerEl.classList.add("ad-showing");
+    loadToLiveEdge(media);
+    expect(covered()).toBe(false);
+    expect(media.seeks).toEqual([]);
+    playerEl.classList.remove("ad-showing");
+    loadToLiveEdge(media);
+    expect(media.seeks).toEqual([WINDOW_START]);
+  });
+
+  it("removes the cover when protection is switched off", () => {
+    const media = mountLive();
+    enable();
+    fire(media, "loadstart");
+    expect(covered()).toBe(true);
+    NS.hooks.youtube.update(ctx({ active: false }, { liveFromStart: true }));
+    expect(covered()).toBe(false);
+    expect(media.volume).toBe(0.8);
+  });
+
+  it("starts the stream from the beginning again when coming back to it from another page", () => {
+    const media = mountLive();
+    const urlA = location.href;
+    const display = document.querySelector(".ytp-time-display");
+    const navigate = (url, isLive) => {
+      history.pushState({}, "", url);
+      display.classList.toggle("ytp-live", isLive);
+      NS.hooks.youtube.update(ctx({ reason: "navigate" }, { liveFromStart: true }));
+      loadToLiveEdge(media);
+      landSeek(media);
+    };
+    enable();
+    loadToLiveEdge(media);
+    landSeek(media);
+    expect(media.seeks).toEqual([WINDOW_START]);
+
+    navigate("/watch?v=vod", false);
+    expect(media.seeks).toEqual([WINDOW_START]);
+
+    navigate(urlA, true);
+    expect(media.seeks).toEqual([WINDOW_START, WINDOW_START]);
+    expect(covered()).toBe(false);
+  });
+
+  it("gives the seek its own time when loading took most of the timeout", () => {
+    vi.useFakeTimers();
+    const media = mountLive();
+    enable();
+    fire(media, "loadstart");
+    vi.advanceTimersByTime(NS.youtube.LIVE_COVER_TIMEOUT_MS - 1000);
+    media.readyState = 1;
+    fire(media, "loadedmetadata");
+    media.time = LIVE_EDGE;
+    media.readyState = 4;
+    fire(media, "seeked");
+    expect(media.seeks).toEqual([WINDOW_START]);
+
+    vi.advanceTimersByTime(2000);
+    expect(covered()).toBe(true); // the first timeout alone would have shown the live edge here
+    landSeek(media);
+    expect(covered()).toBe(false);
+  });
+
+  it("never stays covered longer than the overall limit", () => {
+    vi.useFakeTimers();
+    const media = mountLive();
+    enable();
+    const { LIVE_COVER_TIMEOUT_MS, LIVE_COVER_MAX_MS } = NS.youtube;
+    fire(media, "loadstart");
+    vi.advanceTimersByTime(LIVE_COVER_TIMEOUT_MS - 1);
+    media.time = LIVE_EDGE;
+    media.readyState = 4;
+    fire(media, "seeked");
+    expect(media.seeks).toEqual([WINDOW_START]);
+
+    vi.advanceTimersByTime(LIVE_COVER_MAX_MS - LIVE_COVER_TIMEOUT_MS);
+    expect(covered()).toBe(true);
+    vi.advanceTimersByTime(1);
+    expect(covered()).toBe(false);
+    expect(media.volume).toBe(0.8);
+  });
+
+  it("recognises premieres by their label in several languages", () => {
+    for (const badge of ["PREMIERE", "Première", "Estreno", "Estreia", "Премьера", "プレミア公開", "최초 공개", "首播"]) {
+      const media = mountLive({ badge });
+      enable();
+      loadToLiveEdge(media);
+      expect(media.seeks, badge).toEqual([]);
+    }
+    for (const badge of ["Live", "EN DIRECTO", "Ao vivo", "В эфире", "ライブ", "실시간", "直播"]) {
+      const media = mountLive({ badge });
+      enable();
+      loadToLiveEdge(media);
+      expect(media.seeks, badge).toEqual([WINDOW_START]);
+    }
+  });
+
+  it("uncovers when this copy of the script is orphaned during the cover", () => {
+    const media = mountLive();
+    enable();
+    fire(media, "loadstart");
+    expect(covered()).toBe(true);
+    delete api.runtime.id; // the extension was updated or removed
+    fire(media, "loadedmetadata");
+    expect(covered()).toBe(false);
+    expect(media.volume).toBe(0.8);
+  });
+
+  it("removes a cover left behind by an orphaned copy when a new copy starts", async () => {
+    const media = mountLive();
+    enable();
+    fire(media, "loadstart");
+    expect(covered()).toBe(true);
+    delete api.runtime.id;
+
+    ({ NS, api } = await loadExtension(["platforms/youtube/content.js"]));
+    enable();
+    expect(covered()).toBe(false);
+    expect(media.volume).toBe(0.8);
+  });
+
+  it("hides the covered video with the stylesheet", () => {
+    mountLive();
+    const state = NS.defaultState();
+    state.platforms.youtube.options.liveFromStart = true;
+    setHtmlClasses(NS.classesFor(NS.getPlatform("youtube"), state));
+    const video = document.querySelector("#movie_player video");
+    const selectors = hidingSelectors("youtube");
+    expect(isHidden(video, selectors)).toBe(false);
+    document.querySelector("#movie_player").setAttribute(NS.youtube.LIVE_COVER, "");
+    expect(isHidden(video, selectors)).toBe(true);
   });
 });

@@ -4,6 +4,10 @@ All notable changes to this extension go here. The format is based on [Keep a Ch
 
 ## [Unreleased]
 
+### Added
+
+- YouTube: new option to start live streams from the beginning (off by default). When you open a stream that is live right now, it starts at the earliest point you can rewind to instead of the live picture. Until the jump has happened, the video stays dark and silent; if the jump takes too long (more than a few seconds), the stream plays live instead. YouTube only keeps the last hours of a stream (often 12), so a longer stream starts as far back as YouTube allows. Finished streams and streams without rewind play as usual, and clicking "Live" or seeking afterwards is never undone. Premieres play as usual too; they are recognised by their label, so in a language the extension does not know yet a premiere may start from the beginning as well.
+
 ### Changed
 
 - YouTube and Twitch: the current time and the duration in the player are now two separate options, so you can see how far into a video you are without seeing how long it is. Both are on by default, and your previous setting carries over to both. On YouTube, the time left, shown after clicking the time, counts as duration.
