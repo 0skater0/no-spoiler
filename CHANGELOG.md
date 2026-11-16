@@ -4,6 +4,8 @@ All notable changes to this extension go here. The format is based on [Keep a Ch
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-16
+
 ### Added
 
 - YouTube: new option to start live streams from the beginning (off by default). When you open a stream that is live right now, it starts at the earliest point you can rewind to instead of the live picture. Until the jump has happened, the video stays dark and silent; if the jump takes too long (more than a few seconds), the stream plays live instead. YouTube only keeps the last hours of a stream (often 12), so a longer stream starts as far back as YouTube allows. Finished streams and streams without rewind play as usual, and clicking "Live" or seeking afterwards is never undone. Premieres play as usual too; they are recognised by their label, so in a language the extension does not know yet a premiere may start from the beginning as well.
@@ -64,6 +66,7 @@ Complete rewrite. The extension is now called *No Spoilers*, runs on Firefox and
 
 Settings page with dark mode, configurable keyboard shortcut and reset to defaults. Options for video time, progress bar, comments, description, recommendations, chat, end cards and autoplay.
 
-[Unreleased]: https://github.com/0skater0/no-spoiler/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/0skater0/no-spoiler/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/0skater0/no-spoiler/releases/tag/v1.2.0
 [1.1.0]: https://github.com/0skater0/no-spoiler/releases/tag/v1.1.0
 [1.0.0]: https://github.com/0skater0/no-spoiler/releases/tag/v1.0.0
