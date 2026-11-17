@@ -4,6 +4,8 @@ All notable changes to this extension go here. The format is based on [Keep a Ch
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-18
+
 ### Added
 
 - Twitch: new option to start live streams from the beginning (off by default). It needs Twitch's rewind, which requires Twitch Turbo or a subscription to the channel. It only works on channels that keep their videos. When you open a channel that is live right now, the stream jumps to its start instead of showing the live picture. The video stays dark and silent until the jump is done. If rewind is not available, or the jump takes more than a few seconds, the stream plays live. If you click "Live" afterwards, the stream stays live; opening the channel again starts from the beginning.
@@ -83,7 +85,8 @@ Complete rewrite. The extension is now called *No Spoilers*, runs on Firefox and
 
 Settings page with dark mode, configurable keyboard shortcut and reset to defaults. Options for video time, progress bar, comments, description, recommendations, chat, end cards and autoplay.
 
-[Unreleased]: https://github.com/0skater0/no-spoiler/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/0skater0/no-spoiler/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/0skater0/no-spoiler/releases/tag/v1.3.0
 [1.2.0]: https://github.com/0skater0/no-spoiler/releases/tag/v1.2.0
 [1.1.0]: https://github.com/0skater0/no-spoiler/releases/tag/v1.1.0
 [1.0.0]: https://github.com/0skater0/no-spoiler/releases/tag/v1.0.0
