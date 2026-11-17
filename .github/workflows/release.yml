@@ -6,13 +6,24 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 permissions:
-  contents: write
+  contents: read
 
+# Each store has its own job, so a failed upload does not skip the other store and
+# "Re-run failed jobs" repeats only the store that failed.
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      previous: ${{ steps.store.outputs.previous }}
+      changed: ${{ steps.store.outputs.changed }}
+      promo-changed: ${{ steps.store.outputs.promo-changed }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history and tags, to compare the store images with the previous release.
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -46,22 +57,103 @@ jobs:
           node -e "import('./scripts/lib/changelog.mjs').then((m) => require('fs').writeFileSync('release-notes.md',
           m.changelogSection('CHANGELOG.md', process.env.GITHUB_REF_NAME.slice(1))))"
 
+      # The store images are rendered locally and committed (scripts/store-screenshots.mjs);
+      # the release takes them from the tag as they are.
+      - name: Check for changed store screenshots
+        id: store
+        run: |
+          PREVIOUS=$(git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' "$GITHUB_REF_NAME^" 2>/dev/null || true)
+          changed() {
+            if [ -z "$PREVIOUS" ]; then echo true
+            elif git diff --quiet "$PREVIOUS" "$GITHUB_REF_NAME" -- "$@"; then echo false
+            else echo true
+            fi
+          }
+          CHANGED=$(changed 'docs/store/screenshot-*.png' docs/store/captions.json)
+          PROMO_CHANGED=$(changed 'docs/store/promo-*.png')
+          echo "Previous release: ${PREVIOUS:-none}, screenshots changed: $CHANGED, promo tiles changed: $PROMO_CHANGED"
+          echo "previous=$PREVIOUS" >> "$GITHUB_OUTPUT"
+          echo "changed=$CHANGED" >> "$GITHUB_OUTPUT"
+          echo "promo-changed=$PROMO_CHANGED" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
-          files: dist/*.zip
+          files: |
+            dist/*.zip
+            docs/store/*.png
           body_path: release-notes.md
           draft: false
           prerelease: false
 
-      # Store uploads run only when the secrets are configured
-      # (Settings -> Secrets and variables -> Actions). See docs/STORE.md.
+      # The store jobs submit exactly the files built and tested here.
+      - name: Keep the build for the store jobs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  # Store uploads run only when the secrets are configured
+  # (Settings -> Secrets and variables -> Actions). See docs/STORE.md.
+  firefox:
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      screenshots: ${{ steps.amo-screenshots.outcome }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Fetch the build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist/
+
       - name: Submit to addons.mozilla.org
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         if: env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != ''
         run: node scripts/publish-firefox.mjs
+
+      # A failed screenshot update must not fail the Firefox job.
+      - name: Update the AMO screenshots
+        id: amo-screenshots
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        if: env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != '' && needs.build.outputs.changed == 'true'
+        continue-on-error: true
+        timeout-minutes: 10
+        run: node scripts/sync-amo-previews.mjs --annotate
+
+  chrome:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: Fetch the build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist/
 
       - name: Submit to the Chrome Web Store
         env:
@@ -72,3 +164,45 @@ jobs:
           CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
         if: env.CWS_EXTENSION_ID != '' && env.CWS_REFRESH_TOKEN != ''
         run: node scripts/publish-chrome.mjs
+
+  notes:
+    needs: [build, firefox, chrome]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      # The Chrome Web Store API cannot change listing images.
+      - name: Note for the store screenshots
+        if: needs.build.outputs.changed == 'true'
+        env:
+          PREVIOUS: ${{ needs.build.outputs.previous }}
+          AMO_OUTCOME: ${{ needs.firefox.outputs.screenshots }}
+        run: |
+          case "$AMO_OUTCOME" in
+            success) AMO_NOTE="AMO: updated by the workflow." ;;
+            failure) AMO_NOTE="AMO: the update failed, see the warning of the run. To repair, run \`node scripts/sync-amo-previews.mjs\` by hand; it replaces all previews on the listing." ;;
+            # skipped or empty: no AMO credentials, or the Firefox upload failed.
+            *) AMO_NOTE="AMO: not updated, the step was skipped (no AMO credentials or the Firefox upload failed). Run \`node scripts/sync-amo-previews.mjs\` by hand." ;;
+          esac
+          {
+            echo "### Store screenshots changed"
+            echo
+            echo "The screenshots in \`docs/store/\` changed since ${PREVIOUS:-the start of the repository}."
+            echo
+            echo "$AMO_NOTE"
+            echo
+            echo "Chrome Web Store: replace them by hand in the developer dashboard, *Store listing*, *Screenshots*."
+            echo "The files are attached to the GitHub release."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Note for the promo tiles
+        if: needs.build.outputs.promo-changed == 'true'
+        env:
+          PREVIOUS: ${{ needs.build.outputs.previous }}
+        run: |
+          {
+            echo "### Promo tiles changed"
+            echo
+            echo "The promo tiles in \`docs/store/\` changed since ${PREVIOUS:-the start of the repository}."
+            echo "Chrome Web Store: upload them by hand in the developer dashboard, *Store listing*, *Small promo tile* and *Marquee promo tile*."
+            echo "The files are attached to the GitHub release."
+          } >> "$GITHUB_STEP_SUMMARY"

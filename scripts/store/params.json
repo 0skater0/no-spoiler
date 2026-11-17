@@ -1,0 +1,82 @@
+{
+  "captureScale": 2,
+  "storage": {
+    "youtube.overlayControls": true,
+    "youtube.maskTitles": true
+  },
+  "marker": {
+    "advance": 7,
+    "size": 5
+  },
+  "popup": {
+    "width": 440,
+    "right": 1190,
+    "top": 50,
+    "height": 700,
+    "radius": 14,
+    "shadow": "0 12px 40px rgba(0,0,0,0.6)",
+    "titleTop": 197,
+    "titleSize": 54,
+    "tagTop": 267,
+    "tagSize": 24,
+    "tagLh": 34,
+    "listTop": 352,
+    "listSize": 24,
+    "listLh": 44,
+    "dot": 10,
+    "bullets": [
+      "Time and progress bars",
+      "Durations on thumbnails",
+      "Chat, comments, recommendations",
+      "Titles, if you want",
+      "Every option per site, applied instantly"
+    ]
+  },
+  "options": {
+    "viewport": 820,
+    "captureHeight": 700,
+    "width": 900,
+    "radius": 16,
+    "shadow": "0 8px 34px rgba(0,0,0,0.6)",
+    "titleTop": 75,
+    "titleSize": 46,
+    "subTop": 136,
+    "subSize": 24
+  },
+  "fitMinScale": 0.8,
+  "marquee": {
+    "width": 1400,
+    "height": 560,
+    "left": 90,
+    "gap": 40,
+    "logoTop": 90,
+    "logoSize": 120,
+    "titleTop": 248,
+    "titleSize": 64,
+    "sitesTop": 333,
+    "sitesSize": 30,
+    "subTop": 376,
+    "subSize": 26,
+    "subLh": 36,
+    "frameRight": 1290,
+    "frameTop": 45,
+    "frameHeight": 470,
+    "radius": 14,
+    "shadow": "0 12px 40px rgba(0,0,0,0.6)"
+  },
+  "small": {
+    "width": 440,
+    "height": 280,
+    "logoLeft": 40,
+    "logoTop": 84,
+    "logoSize": 112,
+    "textLeft": 175,
+    "margin": 12,
+    "titleTop": 101,
+    "titleSize": 40,
+    "sitesTop": 150,
+    "sitesSize": 17,
+    "subTop": 174,
+    "subSize": 17
+  }
+}

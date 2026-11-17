@@ -3,7 +3,7 @@
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { BACKGROUND_FILES, discoverPlatforms, generateRegistrySource } from "./lib/platforms.mjs";
+import { BACKGROUND_FILES, discoverPlatforms, generateRegistrySource, joinLabels } from "./lib/platforms.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = path.join(ROOT, "src");
@@ -15,8 +15,7 @@ export const MIN_CHROME = "120";
 export const CHROME_SHORTCUT = { default: "Alt+Shift+U", mac: "Command+Shift+U" };
 
 function description(platforms) {
-  const names = platforms.map((p) => p.label);
-  const list = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names.at(-1)}` : names[0];
+  const list = joinLabels(platforms.map((p) => p.label), "and");
   return `Hide spoilers on ${list}: video time, progress bars, durations, comments, chat replay, recommendations and more.`;
 }
 

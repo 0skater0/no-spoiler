@@ -27,7 +27,7 @@ version is an update of that listing.
 4. Release notes: copy the version's section from `CHANGELOG.md`.
 5. Afterwards, in *Edit Product Page*: the manifest name is now *No Spoilers*;
    check that the listing name, summary and description match (see texts
-   below), and replace the screenshots.
+   below). Screenshots: see [Graphics](#graphics).
 
 Data collection: the manifest declares `data_collection_permissions: none`.
 
@@ -42,7 +42,8 @@ Listing: <https://chromewebstore.google.com/detail/hmklilohlfdjlhpmdlidpfklabdop
    language English.
 4. Graphics: the 128 px icon is in the package (`icons/on-128.png`). The store
    needs at least one screenshot of 1280×800 or 640×400 px, and a small promo
-   tile of 440×280 px: `docs/store/promo-small-440x280.png`.
+   tile of 440×280 px: `docs/store/promo-small-440x280.png`. See
+   [Graphics](#graphics).
 5. *Privacy practices*: single purpose and permission justifications below;
    data usage: no data collected; privacy policy URL:
    `https://github.com/0skater0/no-spoiler/blob/main/PRIVACY.md`.
@@ -58,6 +59,11 @@ repository secret*.
 
 Both stores still review every version; the workflow only submits it.
 
+Each store has its own job. If one upload fails, the other store still gets
+the version, and *Re-run failed jobs* repeats only the store that failed. The
+built packages are kept for 7 days; after that, push a fixed tag or upload by
+hand.
+
 ### Firefox
 
 1. AMO Developer Hub → *Tools* → *Manage API Keys* → generate credentials.
@@ -66,7 +72,9 @@ Both stores still review every version; the workflow only submits it.
 
 The workflow runs `scripts/publish-firefox.mjs` (`web-ext sign --channel
 listed`) with the changelog section as release notes, and does not wait for
-the review.
+the review. If the screenshots changed since the previous tag, it then runs
+`scripts/sync-amo-previews.mjs` with the same credentials (see
+[Graphics](#graphics)).
 
 ### Chrome
 
@@ -75,21 +83,30 @@ The item has to exist first: create it once by hand (see above). Then:
 1. In the developer dashboard, note the **item ID** of the extension and
    your **publisher ID** (shown in the dashboard URL).
 2. In the [Google Cloud console](https://console.cloud.google.com/), create a
-   project, enable the *Chrome Web Store API*, configure the OAuth consent
-   screen (type *External*, add yourself as a user) and **publish** it to
-   production, otherwise the refresh token expires after seven days.
+   project, enable the *Chrome Web Store API* and configure the OAuth consent
+   screen (*Google Auth Platform*, audience *External*). Under *Branding*, fill
+   in the support email, the home page (the repository URL), the privacy
+   policy (`PRIVACY.md` on GitHub) and `github.com` as authorised domain, and
+   leave the logo empty (a logo requires Google's verification). Then
+   **publish** the app to production under *Audience*: in testing mode Google
+   blocks the sign-in for anyone not listed as test user, and the refresh
+   token expires after seven days.
 3. Create an OAuth client ID (type *Web application*, authorised redirect URI
    `https://developers.google.com/oauthplayground`).
 4. In the [OAuth Playground](https://developers.google.com/oauthplayground):
    gear icon → *Use your own OAuth credentials* (client ID and secret from
    step 3), scope `https://www.googleapis.com/auth/chromewebstore`,
-   *Authorize APIs*, *Exchange authorization code for tokens*, copy the
-   refresh token.
+   *Authorize APIs* (sign in with the account that owns the developer
+   dashboard; on "Google hasn't verified this app" choose *Advanced* → *Go to
+   …*), *Exchange authorization code for tokens*, copy the refresh token. If
+   the exchange answers `internal_failure`, the new client is not active yet:
+   wait a few minutes and authorize again, a code works only once.
 5. Secrets: `CWS_EXTENSION_ID`, `CWS_PUBLISHER_ID`, `CWS_CLIENT_ID`,
    `CWS_CLIENT_SECRET`, `CWS_REFRESH_TOKEN`.
 
 The workflow runs `scripts/publish-chrome.mjs`: upload through the Chrome Web
-Store API v2, then submit for review.
+Store API v2, then submit for review. The API cannot change listing images;
+screenshots stay a manual step (see [Graphics](#graphics)).
 
 These steps follow the Chrome Web Store API documentation as of 2026; if
 Google changed the console, its current guide wins.
@@ -208,6 +225,52 @@ All in `docs/store/`. The popup and settings page in them are screenshots of the
 |---|---|
 | `promo-small-440x280.png` | Chrome: small promo tile |
 | `promo-marquee-1400x560.png` | Chrome: marquee promo tile |
-| `screenshot-1-popup-1280x800.png`, `screenshot-2-jump-buttons-1280x800.png`, `screenshot-3-settings-1280x800.png` | Chrome and AMO: screenshots (RGB, no alpha) |
+| `screenshot-1-popup-1280x800.png`, `screenshot-2-jump-buttons-1280x800.png`, `screenshot-3-settings-1280x800.png` | Chrome and AMO: screenshots (RGB, no alpha), in this order |
+| `captions.json` | AMO: caption per screenshot (English) |
 
-Screenshots of the real sites (YouTube, Twitch) have to be taken by hand; resize them to 1280×800 without transparency.
+All images are 8-bit RGB without alpha; `npm test` checks that.
+
+#### Rendering the screenshots and promo tiles
+
+```bash
+npm ci
+npm run store:screenshots
+```
+
+`scripts/store-screenshots.mjs` builds `dist/chrome`, loads it into one
+headless, muted Google Chrome (must be installed), captures the popup and the
+settings page at twice the size and composes `screenshot-1`, `screenshot-3`
+and both promo tiles from `scripts/store/` (layout and texts in
+`templates.mjs`, sizes and stored settings in `params.json`, font Inter under
+the SIL Open Font License in `fonts/`). The list of sites in the texts comes
+from the `label` and `order` of `src/platforms/*/platform.json`; if it gets too
+long for a line, the line shrinks a little and then wraps. Commit the result:
+the release takes the images from the tag and does not render them in CI,
+because the rendering differs slightly between machines. On one machine the
+output is byte-for-byte reproducible.
+
+Only `screenshot-2` is made by hand. Screenshots of the real
+sites (YouTube, Twitch) have to be taken by hand too; resize them to 1280×800
+without transparency and add a caption to `captions.json`. The file name order
+is the display order.
+
+#### Getting the screenshots into the stores
+
+On each release tag, the workflow compares `docs/store/screenshot-*.png` and
+`captions.json` with the previous tag (the first tag always counts as
+changed). The release always has `docs/store/*.png` attached.
+
+- **AMO, automatic:** if they changed, `scripts/sync-amo-previews.mjs` uploads
+  all screenshots in file order with position and caption, then deletes the
+  previous ones, so the listing never runs empty. The listing screenshots
+  change with the tag, so the store shows them while the new version is
+  still in the AMO review. If an upload fails, the script removes the
+  previews it already created; if only deleting the old ones fails, the new
+  set stays and the old ones remain next to it. A failure leaves a warning in
+  the run and a note in the run summary; the release goes on. To repair, run
+  `AMO_JWT_ISSUER=… AMO_JWT_SECRET=… node scripts/sync-amo-previews.mjs` by
+  hand: it replaces all previews on the listing with the local ones. Add
+  `--dry-run` to only print the plan (changes nothing).
+- **Chrome, manual:** if they changed, the run summary says so. Replace the
+  screenshots in the developer dashboard under *Store listing* with the files
+  from the release or from `docs/store/`.

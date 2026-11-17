@@ -34,10 +34,9 @@ async function call(url, init) {
 const { version } = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8"));
 const zip = readFileSync(path.join(ROOT, "dist", `no-spoiler-chrome-${version}.zip`));
 
-const { access_token: token } = await call("https://www.googleapis.com/oauth2/v4/token", {
+const { access_token: token } = await call("https://oauth2.googleapis.com/token", {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
+  body: new URLSearchParams({
     client_id: env.CWS_CLIENT_ID,
     client_secret: env.CWS_CLIENT_SECRET,
     refresh_token: env.CWS_REFRESH_TOKEN,

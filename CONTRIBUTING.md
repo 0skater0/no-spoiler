@@ -169,7 +169,11 @@ The extension makes no network requests.
    `test/twitch.test.js`. Every option needs at least one
    `data-expect-hidden` element.
 
-5. `npm test && npm run lint`. Popup, options page, manifest and permissions
+5. Add the site and its options to the option table in the README, in the
+   order of `platform.json`, with their defaults. `test/readme.test.js`
+   fails until the table matches; the same applies to every new option.
+
+6. `npm test && npm run lint`. Popup, options page, manifest and permissions
    pick up the new platform automatically.
 
 ## Finding selectors on a live site

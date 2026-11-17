@@ -47,7 +47,7 @@ Chrome on `chrome://extensions/shortcuts`.
 | Turn off autoplay (switched back on when protection is turned off) | on |
 | Start live streams from the beginning (as far back as YouTube allows, often the last 12 hours) | off |
 | Jump buttons in the player bar, next to play (sizes selectable, default 5 and 10 min) | off |
-| Jump buttons in the middle of the video on hover (sizes selectable, default 1, 5 and 10 min) | off |
+| Jump buttons in the middle of the video (on hover, sizes selectable, default 1, 5 and 10 min) | off |
 | Hide comments | on |
 | Hide description and chapter list | on |
 | Hide recommendations next to the video | on |
@@ -62,8 +62,8 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide seek bar | on |
 | Hide seek bar hover preview | on |
 | Hide recommendations at the end of a video | on |
-| Jump buttons in the player bar on videos (sizes selectable) | off |
-| Jump buttons in the middle of videos on hover (sizes selectable) | off |
+| Jump buttons in the player bar on videos, next to play (sizes selectable, default 5 and 10 min) | off |
+| Jump buttons in the middle of videos (on hover, sizes selectable, default 1, 5 and 10 min) | off |
 | Collapse chat replay on videos (Twitch's own collapse button) | on |
 | Collapse chat on live streams | off |
 | Blur video and clip thumbnails | on |
@@ -71,11 +71,15 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide video and clip lengths | on |
 | Hide watch progress bars on videos | on |
 | Disable video previews on hover | on |
-| Hide category, tags, streamer avatar, streamer name on cards | off |
+| Hide category (on cards) | off |
+| Hide tags (on cards) | off |
+| Hide streamer avatar (on cards) | off |
+| Hide streamer name (on cards) | off |
 | Hide titles of streams, videos and clips | off |
 | Hide title tooltips | off |
 | Hide featured carousel on the home page | off |
-| Hide recommended channels / categories in the sidebar | off |
+| Hide recommended channels in the sidebar | off |
+| Hide recommended categories in the sidebar | off |
 | Hide stream uptime | on |
 
 No Spoilers only runs on the sites you allow: after installing, a welcome

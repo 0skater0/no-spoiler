@@ -80,6 +80,12 @@ export function validate(meta, folder) {
   }
 }
 
+/** Joins site names for prose: "A", "A & B", "A, B & C"; pass "and" for "A, B and C". */
+export function joinLabels(labels, conjunction = "&") {
+  if (labels.length < 2) return labels.join("");
+  return `${labels.slice(0, -1).join(", ")} ${conjunction} ${labels.at(-1)}`;
+}
+
 /** Source of core/platforms.generated.js. */
 export function generateRegistrySource(platforms) {
   return [
