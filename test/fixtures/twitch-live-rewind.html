@@ -1,0 +1,36 @@
+<!-- Live channel page with Stream Rewind (Twitch Turbo or a channel sub). The
+     seek bar is reduced from the live player at the live edge (Firefox,
+     2026-11-16); its controls exist twice, as on the site. The rest of the
+     page is as in twitch-live.html. -->
+<div id="root">
+  <main>
+    <div data-a-target="video-player" data-a-player-type="site" class="video-player">
+      <video></video>
+      <div data-a-target="player-controls">
+        <div data-test-selector="seekbar-interaction-area__interactionArea" data-a-target="player-seekbar" class="seekbar-interaction-area" data-expect-hidden="hideSeekbar">
+          <div class="seekbar-bar">
+            <span style="inset-inline-start: 0%; width: 100%" data-test-selector="seekbar-segment__segment" class="seekbar-segment"></span>
+            <span style="inset-inline-start: 100%"></span>
+          </div>
+        </div>
+      </div>
+      <div data-a-target="player-controls">
+        <div data-test-selector="seekbar-interaction-area__interactionArea" data-a-target="player-seekbar" class="seekbar-interaction-area" data-expect-hidden="hideSeekbar">
+          <div class="seekbar-bar">
+            <span style="inset-inline-start: 0%; width: 100%" data-test-selector="seekbar-segment__segment" class="seekbar-segment"></span>
+            <span style="inset-inline-start: 100%"></span>
+          </div>
+        </div>
+        <button data-a-target="player-play-pause-button" data-expect-visible></button>
+        <!-- Distance to the live edge and position; only the texts are known, the markup is assumed. -->
+        <div><p data-expect-hidden="hideLivePlayerTime">-4:56:23</p></div>
+        <div><p data-expect-hidden="hideLivePlayerTime">00:00:19</p></div>
+        <strong data-expect-visible>LIVE</strong>
+      </div>
+    </div>
+    <div class="channel-info-content">
+      <p data-a-target="stream-title" data-expect-hidden="maskTitles">Live stream title</p>
+      <span class="live-time" data-expect-hidden="hideLiveUptime"><p>4:56:23</p></span>
+    </div>
+  </main>
+</div>

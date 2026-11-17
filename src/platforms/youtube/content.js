@@ -168,20 +168,11 @@
    * it is a live stream, the video is covered and silenced until the seek has
    * landed and a frame of the new position is ready. Each visit of a page is
    * handled once: a later reload of the media, the "Live" button or a seek
-   * by the user is left alone.
-   *
-   * Silencing sets the volume to 0 and leaves `muted` alone, so whatever the
-   * user does with mute during the cover stands; only the volume is given
-   * back. The volume to give back is kept in the LIVE_COVER attribute, so a
-   * newer copy of this script can undo the cover of an orphaned one.
+   * by the user is left alone. Covering and silencing: core/live-cover.js.
    */
-  const LIVE_COVER = "data-ns-live-cover";
+  const LIVE_COVER = NS.liveCover.ATTR;
   // A shorter rewind window is not worth a seek.
   const LIVE_MIN_REWIND_SECONDS = 30;
-  // Gives the player back if loading or the seek stalls, so it cannot stay black.
-  // The time starts again when the seek is issued, within LIVE_COVER_MAX_MS overall.
-  const LIVE_COVER_TIMEOUT_MS = 8000;
-  const LIVE_COVER_MAX_MS = 15000;
   // Premieres carry "ytp-live" too. The page offers the content script no
   // language-independent sign of a premiere, so this matches the badge label
   // in the languages known here; an unknown label is treated as a live stream.
@@ -193,12 +184,14 @@
     listening: null, // document with the media listeners
     load: null, // { video, seekTarget, finished } of the current media load
     doneUrl: null, // page handled last; forgotten when navigating to another page
-    covered: null, // player element carrying LIVE_COVER
-    silenced: null, // video silenced by the cover
-    volume: 1, // volume to give back to `silenced`
-    coverStart: 0,
-    timer: null,
   };
+
+  const liveCover = NS.liveCover.create({
+    onTimeout(playerEl) {
+      live.doneUrl = currentUrl(playerEl.ownerDocument);
+      finishLoad();
+    },
+  });
 
   function liveOptionOn(ctx) {
     return Boolean(ctx && ctx.active && ctx.options.liveFromStart);
@@ -221,61 +214,9 @@
     return Math.max(earliest, video.currentTime - behind);
   }
 
-  function cover(playerEl, video) {
-    if (live.covered === playerEl) return;
-    uncover();
-    live.covered = playerEl;
-    live.silenced = video;
-    live.volume = video.volume;
-    playerEl.setAttribute(LIVE_COVER, String(live.volume));
-    video.volume = 0;
-    live.coverStart = Date.now();
-    armCoverTimeout();
-  }
-
-  /** (Re)starts the safety timeout, never beyond LIVE_COVER_MAX_MS after the cover went on. */
-  function armCoverTimeout() {
-    if (live.timer !== null) clearTimeout(live.timer);
-    const playerEl = live.covered;
-    const left = live.coverStart + LIVE_COVER_MAX_MS - Date.now();
-    live.timer = setTimeout(() => {
-      live.timer = null;
-      live.doneUrl = currentUrl(playerEl.ownerDocument);
-      finishLoad();
-    }, Math.max(0, Math.min(LIVE_COVER_TIMEOUT_MS, left)));
-  }
-
-  /** The player applies its saved volume while it loads; that becomes the volume to give back. */
-  function onVolumeChange(video) {
-    if (live.silenced !== video || video.volume === 0) return;
-    live.volume = video.volume;
-    live.covered.setAttribute(LIVE_COVER, String(live.volume));
-    video.volume = 0;
-  }
-
-  function uncover() {
-    if (live.timer !== null) clearTimeout(live.timer);
-    live.timer = null;
-    live.covered?.removeAttribute(LIVE_COVER);
-    live.covered = null;
-    // Not 0 any more: someone else (a newer copy of this script) gave it back already.
-    if (live.silenced?.volume === 0) live.silenced.volume = live.volume;
-    live.silenced = null;
-  }
-
-  /** Undoes covers left behind by an orphaned copy of this script (extension updated or reloaded). */
-  function clearStaleCovers(doc) {
-    for (const playerEl of doc.querySelectorAll(`[${LIVE_COVER}]`)) {
-      const volume = Number(playerEl.getAttribute(LIVE_COVER));
-      const video = playerEl.querySelector("video");
-      if (video && video.volume === 0 && volume > 0 && volume <= 1) video.volume = volume;
-      playerEl.removeAttribute(LIVE_COVER);
-    }
-  }
-
   function finishLoad() {
     if (live.load) live.load.finished = true;
-    uncover();
+    liveCover.uncover();
   }
 
   function currentUrl(doc) {
@@ -290,7 +231,7 @@
       // Once the stream has been on screen, switching the option on must not jump back.
       // Before that the settings may simply not be read yet.
       if (video.readyState >= 2) finishLoad();
-      else uncover();
+      else liveCover.uncover();
       return;
     }
     const playerEl = video.isConnected ? video.closest(".html5-video-player") : null;
@@ -300,7 +241,7 @@
     }
     // Ads are no spoilers; the stream is looked at once they are over.
     if (playerEl.classList.contains("ad-showing")) {
-      uncover();
+      liveCover.uncover();
       return;
     }
     if (load.seekTarget !== null) {
@@ -319,7 +260,7 @@
       finishLoad();
       return;
     }
-    cover(playerEl, video);
+    liveCover.cover(playerEl, video);
     // The player first seeks to the live edge itself; seeking before that would be overridden.
     if (video.readyState < 2 || video.seeking) return;
 
@@ -332,7 +273,7 @@
     load.seekTarget = target;
     video.currentTime = target;
     // Loading may have used up most of the time; the seek gets its own.
-    armCoverTimeout();
+    liveCover.arm();
   }
 
   function onMediaEvent(event) {
@@ -340,17 +281,17 @@
     if (root.NoSpoiler !== NS || NS.isContextInvalid()) {
       // A newer copy of this script took over, or the extension is gone.
       for (const type of LIVE_MEDIA_EVENTS) doc.removeEventListener(type, onMediaEvent, true);
-      uncover();
+      liveCover.uncover();
       return;
     }
     const video = event.target;
     if (!video.matches?.(SEL.mainVideo)) return;
     if (event.type === "volumechange") {
-      onVolumeChange(video);
+      liveCover.onVolumeChange(video);
       return;
     }
     if (event.type === "loadstart") {
-      uncover();
+      liveCover.uncover();
       live.load = { video, seekTarget: null, finished: false };
     }
     if (live.load?.video === video) evaluateLive();
@@ -359,7 +300,7 @@
   function updateLiveStart(ctx) {
     live.ctx = ctx;
     if (live.listening !== ctx.document) {
-      clearStaleCovers(ctx.document);
+      NS.liveCover.clearStale(ctx.document);
       // Media events do not bubble; capturing on the document sees every <video>.
       for (const type of LIVE_MEDIA_EVENTS) ctx.document.addEventListener(type, onMediaEvent, true);
       live.listening = ctx.document;
@@ -404,5 +345,5 @@
   });
 
   // Exposed for tests.
-  NS.youtube = { SEL, markBadges, markRemainingTime, ensureSkipButtons, ensureOverlay, AUTOPLAY_RESTORE_KEY, TAB_TITLE, LIVE_COVER, LIVE_COVER_TIMEOUT_MS, LIVE_COVER_MAX_MS };
+  NS.youtube = { SEL, markBadges, markRemainingTime, ensureSkipButtons, ensureOverlay, AUTOPLAY_RESTORE_KEY, TAB_TITLE, LIVE_COVER, LIVE_COVER_TIMEOUT_MS: NS.liveCover.TIMEOUT_MS, LIVE_COVER_MAX_MS: NS.liveCover.MAX_MS };
 })(globalThis);

@@ -36,6 +36,23 @@
     </button>
   </article>
 
+  <!-- Live card in the directory and category lists, reduced from the live site
+       (Chrome, logged out, 2026-11-17): title and channel sit in one link. -->
+  <article>
+    <a data-a-target="preview-card-image-link" href="/dirchannel">
+      <img class="tw-image" src="dir.jpg" alt="" data-expect-hidden="blurLiveThumbnails" />
+    </a>
+    <a data-a-target="preview-card-avatar" data-test-selector="preview-card-avatar" href="/dirchannel" data-expect-hidden="hideCardAvatar"><img alt="dirchannel" /></a>
+    <a data-test-selector="TitleAndChannel" data-a-target="preview-card-channel-link" href="/dirchannel" aria-label="dirchannel streaming Grand final, map 5">
+      <h4 dir="auto" title="Grand final, map 5" data-expect-hidden="maskTitles">Grand final, map 5</h4>
+      <div>
+        <!-- The site nests a <p title> here (built by script); a parsed fixture cannot, so a span stands in. -->
+        <p data-a-target="preview-card-channel-link" data-expect-hidden="hideCardChannelName"><span title="dirchannel">dirchannel</span></p>
+      </div>
+    </a>
+    <p><a data-test-selector="GameLink" data-a-target="preview-card-game-link" href="/directory/category/esports" data-expect-hidden="hideCardCategory">Esports</a></p>
+  </article>
+
   <div class="channel-info">
     <span class="live-time" data-expect-hidden="hideLiveUptime"><p>2:13:07</p></span>
   </div>

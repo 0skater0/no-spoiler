@@ -23,10 +23,36 @@ html.ns-on.ns-twitch-hideCurrentTime.ns-twitch-hideDuration .vod-seekbar-time-la
   display: none !important;
 }
 
-/* Player: the whole seek bar (use jump buttons to navigate) */
-html.ns-on.ns-twitch-hideSeekbar [data-a-target="player-seekbar"],
-html.ns-on.ns-twitch-hideSeekbar .seekbar-interaction-area {
+/*
+ * Player: the whole seek bar (use jump buttons to navigate). While a live
+ * stream is covered, the bar keeps its layout but stays invisible: the
+ * content script clicks its start, and the click position needs the box.
+ */
+html.ns-on.ns-twitch-hideSeekbar [data-a-target="player-seekbar"]:not([data-ns-live-cover] *),
+html.ns-on.ns-twitch-hideSeekbar .seekbar-interaction-area:not([data-ns-live-cover] *) {
   display: none !important;
+}
+
+html.ns-on.ns-twitch-hideSeekbar [data-ns-live-cover] [data-a-target="player-seekbar"],
+html.ns-on.ns-twitch-hideSeekbar [data-ns-live-cover] .seekbar-interaction-area {
+  visibility: hidden !important;
+}
+
+/*
+ * Live: time since the stream started and the distance to the live edge in
+ * the player bar. content.js marks them by their text (only hashed classes).
+ * visibility keeps the LIVE badge next to them in place. Unlike Kick's player
+ * times this is not fail closed: without a stable class or attribute there is
+ * nothing to hide them by before content.js has marked them, so they may show
+ * for a moment until it has.
+ */
+html.ns-on.ns-twitch-hideLivePlayerTime [data-a-target="player-controls"] [data-ns-live-time] {
+  visibility: hidden !important;
+}
+
+/* Live: covers the stream until the content script has rewound it */
+html.ns-on.ns-twitch-liveFromStart [data-a-target="video-player"][data-ns-live-cover] video {
+  opacity: 0 !important;
 }
 
 /* Player: preview image and time while hovering the seek bar */
@@ -92,9 +118,11 @@ html.ns-on.ns-twitch-disableCardHoverPreview [data-a-target="preview-card-image-
 /*
  * Titles. The text stays in the DOM (Twitch's React would re-render it
  * anyway); it is shrunk to zero and a placeholder is shown. The card title
- * is a <button data-a-target="preview-card-title-link"> on current Twitch.
+ * is a <button data-a-target="preview-card-title-link"> on the home page and
+ * an <h4> in the title-and-channel link on directory and category pages.
  */
 html.ns-on.ns-twitch-maskTitles [data-a-target="preview-card-title-link"] :is(h3, h4, p),
+html.ns-on.ns-twitch-maskTitles [data-test-selector="TitleAndChannel"] > h4,
 html.ns-on.ns-twitch-maskTitles [data-a-target="stream-title"],
 html.ns-on.ns-twitch-maskTitles [data-a-target="player-info-title"],
 html.ns-on.ns-twitch-maskTitles [data-test-selector="carousel-title"] {
@@ -102,6 +130,7 @@ html.ns-on.ns-twitch-maskTitles [data-test-selector="carousel-title"] {
 }
 
 html.ns-on.ns-twitch-maskTitles [data-a-target="preview-card-title-link"] :is(h3, h4, p)::after,
+html.ns-on.ns-twitch-maskTitles [data-test-selector="TitleAndChannel"] > h4::after,
 html.ns-on.ns-twitch-maskTitles [data-a-target="stream-title"]::after,
 html.ns-on.ns-twitch-maskTitles [data-a-target="player-info-title"]::after,
 html.ns-on.ns-twitch-maskTitles [data-test-selector="carousel-title"]::after {

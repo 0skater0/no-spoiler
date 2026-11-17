@@ -6,6 +6,11 @@
       <video></video>
       <div data-a-target="player-controls">
         <button data-a-target="player-play-pause-button" data-expect-visible></button>
+        <!-- Time label next to the LIVE badge, from the live site (Firefox, 2026-11-16) -->
+        <div style="user-select: none;" class="Layout-sc-1xcs6mc-0 iKXhug">
+          <p class="CoreText-sc-1txzju1-0 joAHyC" data-expect-hidden="hideLivePlayerTime">00:02:17</p>
+        </div>
+        <strong data-expect-visible>LIVE</strong>
       </div>
     </div>
     <div class="channel-info-content">

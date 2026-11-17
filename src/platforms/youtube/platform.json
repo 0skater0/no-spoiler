@@ -23,6 +23,6 @@
     { "key": "hideThumbnailDurations", "label": "Hide durations on thumbnails", "default": true, "group": "Thumbnails" },
     { "key": "hideWatchProgress", "label": "Hide watch progress bars on thumbnails", "default": true, "group": "Thumbnails" },
     { "key": "maskTitles", "label": "Hide video titles (page, player, thumbnails, browser tab)", "default": false, "group": "Titles" },
-    { "key": "hideTooltips", "label": "Hide title tooltips", "default": false, "group": "Titles" }
+    { "key": "hideTooltips", "label": "Hide the full title on hover", "default": false, "group": "Titles" }
   ]
 }

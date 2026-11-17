@@ -58,6 +58,7 @@ src/
     storage.js       storage access and migration from 0.9.x
     content-core.js  content runtime: classes, observer, SPA navigation, helpers
     player-controls.js skip bar and centre overlay shared by all platforms
+    live-cover.js    covers and silences a live player while it is moved to the start
     content-start.js starts the runtime (last content script file)
   platforms/<id>/  one folder per site
     platform.json    id, label, match patterns, host access, options
@@ -196,7 +197,10 @@ class names (`ScCoreButton-sc-…`) change with every deploy.
 - CSS first. JavaScript only where CSS cannot decide, and every change made
   by JavaScript is undone when the option or the protection is switched off.
 - One throttled `MutationObserver` per page (the core's), no timers that
-  retry, no `console` output in normal operation.
+  retry, no `console` output in normal operation. The one exception is
+  starting a live stream from the beginning: it polls player state the
+  observer does not see, only while the player is covered, and the cover's
+  safety timeout ends it.
 - No network requests, no remote code, no new permissions without discussion.
 
 ## Commit messages

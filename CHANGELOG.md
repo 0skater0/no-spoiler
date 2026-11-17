@@ -4,6 +4,19 @@ All notable changes to this extension go here. The format is based on [Keep a Ch
 
 ## [Unreleased]
 
+### Added
+
+- Twitch: new option to start live streams from the beginning (off by default). It needs Twitch's rewind, which requires Twitch Turbo or a subscription to the channel. It only works on channels that keep their videos. When you open a channel that is live right now, the stream jumps to its start instead of showing the live picture. The video stays dark and silent until the jump is done. If rewind is not available, or the jump takes more than a few seconds, the stream plays live. If you click "Live" afterwards, the stream stays live; opening the channel again starts from the beginning.
+- Twitch: new option to hide the time in the player of a live stream (on by default). This is the time next to the "Live" badge and, after a rewind, the distance to the live picture. Both reveal how long the stream has been running.
+
+### Changed
+
+- YouTube and Twitch: "Hide title tooltips" is now called "Hide the full title on hover". Your setting stays as it was.
+
+### Fixed
+
+- Twitch: hiding titles and the full title on hover now also works on the directory and category pages, not only on the home page.
+
 ## [1.2.0] - 2026-11-16
 
 ### Added

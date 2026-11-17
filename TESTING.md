@@ -147,6 +147,34 @@ Lists (directory, channel videos and clips tabs, search):
 Live channel:
 
 - [ ] Uptime hidden.
+- [ ] No time in the player bar next to the "LIVE" badge; the badge itself stays in place.
+- [ ] With rewind (Turbo or a sub), after jumping back: neither the position nor the distance to the live edge ("-4:56:23") is visible in the player bar.
+- [ ] "Hide stream time and distance to live in the player" off: both times show again without a reload.
+
+Live from the start (switch on "Start live streams from the beginning"; needs
+Twitch Turbo or a sub to the channel, and a channel that keeps its videos):
+
+Do these checks with all other settings at their defaults, so with the seek
+bar hidden. The extension clicks the start of the live player's seek bar
+(`[data-a-target="player-seekbar"]`), which only exists with rewind; while
+the video is dark, the hidden bar keeps its place but stays invisible.
+Whether the account can rewind on a channel shows in the page console (F12):
+
+```js
+// expected true with Turbo or a sub, false otherwise
+!!document.querySelector('[data-a-target="video-player"] [data-a-target="player-seekbar"]');
+```
+
+- [ ] Open a channel that is live right now: the video area stays dark and silent for a moment, then playback starts at the beginning of the stream, not at the live edge (switch "Hide seek bar" off afterwards to check the position). No live picture or sound before that.
+- [ ] Same after clicking a live channel in the sidebar or on the home page (navigation without reload), and after reloading the page.
+- [ ] Channel A, then channel B, then back to A without reload: each starts from the beginning.
+- [ ] Clicking "Live" afterwards jumps to the live picture and is not undone; quality changes do not jump back.
+- [ ] No seek bar preview stays open after the jump ("Hide seek bar preview" off).
+- [ ] Not muted: sound comes back at the previous volume, the volume slider shows it, and after reloading the page Twitch still uses that volume (not 0). Muted before: stays muted.
+- [ ] Without Turbo or sub (other browser profile, logged out): the video stays dark while the stream loads and then about three more seconds (eight at most), then the stream plays live. Videos (`/videos/<id>`) and clips play as usual.
+- [ ] Option off: live streams open at the live edge. Switching the option on while watching does not jump.
+- [ ] Reload the extension while the video is dark: the video does not stay dark or silent.
+- [ ] Clicking another live channel while the video is still dark: the previous channel's live picture and sound do not show in between.
 
 ## When something is not hidden
 

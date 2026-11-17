@@ -10,6 +10,7 @@ export const CONTENT_CORE_BEFORE = [
   "core/storage.js",
   "core/content-core.js",
   "core/player-controls.js",
+  "core/live-cover.js",
 ];
 /** Stylesheets every content script loads before the platform's own. */
 export const CONTENT_CSS_BEFORE = ["core/player-controls.css"];

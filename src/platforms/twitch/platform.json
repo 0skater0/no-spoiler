@@ -27,10 +27,12 @@
     { "key": "hideCardAvatar", "label": "Hide streamer avatar", "default": false, "group": "Cards" },
     { "key": "hideCardChannelName", "label": "Hide streamer name", "default": false, "group": "Cards" },
     { "key": "maskTitles", "label": "Hide titles of streams, videos and clips", "default": false, "group": "Titles" },
-    { "key": "hideTooltips", "label": "Hide title tooltips", "default": false, "group": "Titles" },
+    { "key": "hideTooltips", "label": "Hide the full title on hover", "default": false, "group": "Titles" },
     { "key": "hideCarousel", "label": "Hide featured carousel on the home page", "default": false, "group": "Home page and sidebar" },
     { "key": "hideSidebarRecommended", "label": "Hide recommended channels in the sidebar", "default": false, "group": "Home page and sidebar" },
     { "key": "hideSidebarCategories", "label": "Hide recommended categories in the sidebar", "default": false, "group": "Home page and sidebar" },
-    { "key": "hideLiveUptime", "label": "Hide stream uptime", "default": true, "group": "Live" }
+    { "key": "hideLiveUptime", "label": "Hide stream uptime", "default": true, "group": "Live" },
+    { "key": "hideLivePlayerTime", "label": "Hide stream time and distance to live in the player", "default": true, "group": "Live" },
+    { "key": "liveFromStart", "label": "Start live streams from the beginning (needs Twitch Turbo or a channel subscription)", "default": false, "group": "Live" }
   ]
 }

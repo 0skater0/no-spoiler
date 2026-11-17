@@ -55,7 +55,7 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide durations on thumbnails (home, search, recommendations) | on |
 | Hide watch progress bars on thumbnails | on |
 | Hide video titles (watch page, player, thumbnails, browser tab) | off |
-| Hide title tooltips | off |
+| Hide the full title on hover (tooltip) | off |
 | **Twitch** | |
 | Hide current time in the player | on |
 | Hide duration in the player | on |
@@ -76,11 +76,13 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide streamer avatar (on cards) | off |
 | Hide streamer name (on cards) | off |
 | Hide titles of streams, videos and clips | off |
-| Hide title tooltips | off |
+| Hide the full title on hover (tooltip) | off |
 | Hide featured carousel on the home page | off |
 | Hide recommended channels in the sidebar | off |
 | Hide recommended categories in the sidebar | off |
 | Hide stream uptime | on |
+| Hide stream time and distance to live in the player | on |
+| Start live streams from the beginning (needs Twitch Turbo or a channel subscription) | off |
 
 No Spoilers only runs on the sites you allow: after installing, a welcome
 page lets you grant access to YouTube, Twitch or both.
