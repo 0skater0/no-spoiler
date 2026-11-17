@@ -1,0 +1,157 @@
+/*
+ * Kick rules. Every rule hangs on html classes set by the content script:
+ *   html.ns-on                        protection active for this platform
+ *   html.ns-kick-<option>             option switched on
+ *   html[data-ns-page="vod|clip|other"]  page type, set by content.js
+ *
+ * Selector priority: data-testid, ids, aria and role attributes and href
+ * patterns. Kick's class names are Tailwind utilities; the few rules that
+ * need one say why.
+ *
+ * The seek bar of every Kick player (channel page and clip dialog) is a div
+ * with a progress bar ("loaded") as direct child and a slider inside; the
+ * player's control bar is its parent. The control bar only exists while the
+ * player is hovered. During an ad the box around the video has a progress
+ * bar of its own and the volume slider, so the seek bar is the one without
+ * a video inside.
+ */
+
+/*
+ * Player: current time, duration and the stream uptime. They are bare
+ * spans; content.js marks them by their text (data-ns-time). Until it has,
+ * every tabular-nums span of the control bar outside the seek bar stays
+ * hidden (fail closed). tabular-nums is the Tailwind utility Kick uses for
+ * exactly these numbers. visibility keeps the remaining label in place.
+ */
+html.ns-on.ns-kick-hideCurrentTime [data-ns-time="current"],
+html.ns-on.ns-kick-hideCurrentTime [data-ns-time="both"],
+html.ns-on.ns-kick-hideDuration [data-ns-time="duration"],
+html.ns-on.ns-kick-hideDuration [data-ns-time="both"],
+html.ns-on.ns-kick-hideLiveUptime [data-ns-time="live"],
+html.ns-on.ns-kick-hideCurrentTime div:has(> div > [role="progressbar"]) > div:not(:has(> [role="progressbar"])) span.tabular-nums:not([data-ns-time]),
+html.ns-on.ns-kick-hideDuration div:has(> div > [role="progressbar"]) > div:not(:has(> [role="progressbar"])) span.tabular-nums:not([data-ns-time]),
+html.ns-on.ns-kick-hideLiveUptime div:has(> div > [role="progressbar"]) > div:not(:has(> [role="progressbar"])) span.tabular-nums:not([data-ns-time]) {
+  visibility: hidden !important;
+}
+
+/* The " / " between current time and duration is a text node of the row; it goes when both labels are hidden. */
+html.ns-on.ns-kick-hideCurrentTime.ns-kick-hideDuration [data-ns-time-row] {
+  color: transparent !important;
+}
+
+/* Player: the whole seek bar (use jump buttons to navigate) */
+html.ns-on.ns-kick-hideSeekbar div:has(> [role="progressbar"]):has([role="slider"]):not(:has(video)) {
+  display: none !important;
+}
+
+/* Player: preview image and time while hovering the seek bar (the seek bar's only child without a role) */
+html.ns-on.ns-kick-hideSeekbarPreview div:has(> [role="progressbar"]):has([role="slider"]):not(:has(video)) > div:not([role]) {
+  display: none !important;
+}
+
+/* Live: covers the stream until the content script has moved it to the start */
+html.ns-on.ns-kick-liveFromStart #injected-channel-player[data-ns-live-cover] video {
+  opacity: 0 !important;
+}
+
+/*
+ * Chat: content.js collapses the chat replay with Kick's own button. Until
+ * then its content is hidden (no flash), and the button that opens it again
+ * is hidden while the option is on. That button has no attribute of its own;
+ * its wrapper is the element Kick shows only while the chat is collapsed,
+ * recognised by the Tailwind variant that does so.
+ */
+html.ns-on.ns-kick-hideVodChatReplay[data-ns-page="vod"] #channel-chatroom,
+html.ns-on.ns-kick-hideVodChatReplay[data-ns-page="vod"] [class*="group-data-[chat=false]/main:block"] {
+  visibility: hidden !important;
+}
+
+/* Cards: blur thumbnails of videos and clips */
+html.ns-on.ns-kick-blurThumbnails [data-testid="vods-card"] [data-testid="media-card-thumbnail"] img,
+html.ns-on.ns-kick-blurThumbnails a[data-testid="media-card-thumbnail"][href*="/videos/"] img,
+html.ns-on.ns-kick-blurThumbnails [data-testid="clips-card"] img[data-thumbnail],
+html.ns-on.ns-kick-blurThumbnails [data-testid="clips-card"] [data-focus-target] img {
+  filter: blur(14px) !important;
+}
+
+/* Cards: blur thumbnails of live streams */
+html.ns-on.ns-kick-blurLiveThumbnails [data-testid="livestream-results-card"] [data-testid="media-card-thumbnail"] img {
+  filter: blur(14px) !important;
+}
+
+/*
+ * Cards: lengths of videos and clips. The badges on the thumbnail have no
+ * attribute; every text badge stays hidden until content.js marked the
+ * ones without a duration (views, viewers) with data-ns-keep (fail closed).
+ * Anything content.js found by its text is hidden as well.
+ */
+html.ns-on.ns-kick-hideCardDurations [data-testid="vods-card"] [data-testid="media-card-thumbnail"] > div:not(:has(img, video)):not([data-ns-keep]),
+html.ns-on.ns-kick-hideCardDurations a[data-testid="media-card-thumbnail"][href*="/videos/"] > div:not(:has(img, video)):not([data-ns-keep]),
+html.ns-on.ns-kick-hideCardDurations [data-testid="clips-card"] [data-focus-target] > button > div:not(:has(img, video)):not([data-ns-keep]),
+html.ns-on.ns-kick-hideCardDurations [data-ns-duration] {
+  display: none !important;
+}
+
+/* Cards: clips play on hover; the player box is hidden, the thumbnail stays */
+html.ns-on.ns-kick-disableCardHoverPreview [data-testid="clips-card"] [data-preview-visible] > div:has(video),
+html.ns-on.ns-kick-disableCardHoverPreview [data-testid="clips-card"] video {
+  display: none !important;
+}
+
+/* Cards: category, tags, avatar, streamer name */
+html.ns-on.ns-kick-hideCardCategory :is([data-testid="livestream-results-card"], [data-testid="vods-card"], [data-testid="clips-card"]) a[href^="/category/"] {
+  display: none !important;
+}
+
+html.ns-on.ns-kick-hideCardTags :is([data-testid="livestream-results-card"], [data-testid="vods-card"], [data-testid="clips-card"]) button[aria-disabled="true"] {
+  display: none !important;
+}
+
+html.ns-on.ns-kick-hideCardAvatar :is([data-testid="livestream-results-card"], [data-testid="vods-card"], [data-testid="clips-card"]) a:not([data-testid]):not([data-slot]):not([data-card-link]):has(> img) {
+  display: none !important;
+}
+
+html.ns-on.ns-kick-hideCardChannelName :is([data-testid="livestream-results-card"], [data-testid="vods-card"], [data-testid="clips-card"]) a[data-slot="text-link"][data-strong="true"] {
+  display: none !important;
+}
+
+/*
+ * Titles. The text stays in the DOM (React would render it again); it is
+ * shrunk to zero and a placeholder is shown. Card titles are an <h3> (on
+ * clip cards with a button inside), the stream or video title under the
+ * player carries data-testid="livestream-title", the home page carousel
+ * shows it in the link next to the category, and the clip dialog in the
+ * span before the category link (its title attribute moves to data-ns-title
+ * with hideTooltips). On the sub-pages of a live channel a card
+ * lies over the player; its title is the span next to the mute button, the
+ * card is the one with the "Watch now" button (data-variant="primary").
+ */
+html.ns-on.ns-kick-maskTitles :is([data-testid="livestream-results-card"], [data-testid="vods-card"], [data-testid="clips-card"]) h3,
+html.ns-on.ns-kick-maskTitles :is([data-testid="livestream-results-card"], [data-testid="vods-card"], [data-testid="clips-card"]) h3 > button,
+html.ns-on.ns-kick-maskTitles [data-testid="livestream-title"],
+html.ns-on.ns-kick-maskTitles [data-testid="carousel"] a[data-type="body"][data-strong="true"] > span,
+html.ns-on.ns-kick-maskTitles [role="dialog"] span:is([title], [data-ns-title]):has(+ span + a[href^="/category/"]),
+html.ns-on.ns-kick-maskTitles [data-theatre-mode-container] > div:has(> #injected-channel-player) > div:has(> button[data-variant="primary"]) > div > span:has(+ button) {
+  font-size: 0 !important;
+}
+
+html.ns-on.ns-kick-maskTitles :is([data-testid="livestream-results-card"], [data-testid="vods-card"], [data-testid="clips-card"]) h3::after,
+html.ns-on.ns-kick-maskTitles [data-testid="livestream-title"]::after,
+html.ns-on.ns-kick-maskTitles [data-testid="carousel"] a[data-type="body"][data-strong="true"] > span::after,
+html.ns-on.ns-kick-maskTitles [role="dialog"] span:is([title], [data-ns-title]):has(+ span + a[href^="/category/"])::after,
+html.ns-on.ns-kick-maskTitles [data-theatre-mode-container] > div:has(> #injected-channel-player) > div:has(> button[data-variant="primary"]) > div > span:has(+ button)::after {
+  content: "Title hidden";
+  font-size: 0.875rem;
+  font-style: italic;
+  opacity: 0.7;
+}
+
+/* Home page: featured carousel with its player and chat */
+html.ns-on.ns-kick-hideCarousel [data-testid="carousel"] {
+  display: none !important;
+}
+
+/* Sidebar: recommended live channels (the section with the numbered recommendation links) */
+html.ns-on.ns-kick-hideSidebarRecommended #sidebar-wrapper section:has([data-testid^="sidebar-recommended-channel"]) {
+  display: none !important;
+}

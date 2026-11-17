@@ -28,9 +28,19 @@ describe("match patterns", () => {
     expect(NS.urlMatches("http://www.twitch.tv/", tw.matches)).toBe(false);
   });
 
+  it("matches Kick with and without subdomain over https only", () => {
+    const kick = NS.getPlatform("kick");
+    expect(NS.urlMatches("https://kick.com/somechannel", kick.matches)).toBe(true);
+    expect(NS.urlMatches("https://www.kick.com/somechannel/videos/1", kick.matches)).toBe(true);
+    expect(NS.urlMatches("http://kick.com/", kick.matches)).toBe(false);
+    expect(NS.urlMatches("https://notkick.com/", kick.matches)).toBe(false);
+    expect(NS.urlMatches("https://kick.com.evil.test/", kick.matches)).toBe(false);
+  });
+
   it("finds the platform for a URL", () => {
     expect(NS.platformForUrl("https://www.youtube.com/")?.id).toBe("youtube");
     expect(NS.platformForUrl("https://www.twitch.tv/somechannel")?.id).toBe("twitch");
+    expect(NS.platformForUrl("https://kick.com/somechannel")?.id).toBe("kick");
     expect(NS.platformForUrl("https://example.org/")).toBeNull();
     expect(NS.platformForUrl("about:blank")).toBeNull();
     expect(NS.platformForUrl(undefined)).toBeNull();
@@ -43,7 +53,7 @@ describe("match patterns", () => {
 
 describe("state", () => {
   it("orders platforms and applies defaults", () => {
-    expect(NS.platforms.map((p) => p.id)).toEqual(["youtube", "twitch"]);
+    expect(NS.platforms.map((p) => p.id)).toEqual(["youtube", "twitch", "kick"]);
     const s = NS.defaultState();
     expect(s.active).toBe(true);
     expect(s.platforms.youtube.enabled).toBe(true);

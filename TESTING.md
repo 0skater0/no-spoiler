@@ -176,6 +176,52 @@ Whether the account can rewind on a channel shows in the page console (F12):
 - [ ] Reload the extension while the video is dark: the video does not stay dark or silent.
 - [ ] Clicking another live channel while the video is still dark: the previous channel's live picture and sound do not show in between.
 
+### Kick
+
+First grant access in the popup. Kick shows the player's control bar only
+while the mouse is over the player; check the player items while hovering.
+Videos often start with an ad; check the player once the video itself plays.
+
+Video page (`/<channel>/videos/<id>`):
+
+- [ ] Current time and duration hidden, the " / " between them too.
+- [ ] Only "Hide duration" on: the current time is visible, the duration not. Only "Hide current time" on: the reverse.
+- [ ] Seek bar hidden; with "Hide seek bar" off, no time or preview image when hovering it.
+- [ ] Chat replay collapsed; the "Chat" button that opens it again is not shown. Switching the option off opens the chat again.
+- [ ] Jump buttons (if switched on) next to play and in the middle of the video; they seek.
+- [ ] Optional: the title under the player shows "Title hidden"; no tooltip on it.
+
+Clip page (`/<channel>/clips/<clip id>`) and clip dialog (click a clip on a channel's clips tab):
+
+- [ ] Time, duration and seek bar hidden. In the dialog time and duration are one label ("00:05 / 00:17"); it is hidden when either option is on.
+- [ ] Optional: with "Hide titles of streams, videos and clips" and "Hide the full title on hover" both on, the dialog shows "Title hidden" and no tooltip.
+
+Lists (home page, browse, category pages, channel videos and clips tabs):
+
+- [ ] Video and clip thumbnails blurred, live thumbnails not (unless enabled).
+- [ ] No lengths on video and clip cards; views and viewer counts still visible.
+- [ ] Hovering a clip card plays no preview.
+- [ ] Optional: category, tags, avatar, streamer name and titles on cards hidden; carousel on the home page and "Recommended" in the sidebar hidden.
+
+Live channel:
+
+- [ ] No time next to the "LIVE" button in the player bar.
+- [ ] Live chat stays open.
+- [ ] Optional: on the channel's videos, clips and about tabs the card over the player ("Watch now") shows "Title hidden".
+
+Live from the start (switch on "Start live streams from the beginning"; works
+without an account):
+
+- [ ] Open a channel that is live right now: the video area stays dark and silent for a moment, then playback starts at the beginning of the stream ("Go to LIVE" appears in the player bar). No live picture or sound before that.
+- [ ] Same after clicking a live channel in the sidebar or on the home page, and after reloading.
+- [ ] Clicking "Go to LIVE" afterwards jumps to the live picture and is not undone.
+- [ ] Not muted: sound comes back at the previous volume after the jump. Muted before: stays muted.
+- [ ] After reloading the page and after switching channels, the player still uses the previous volume (not 0). Kick keeps it in the cookie `volume` (F12, Application, Cookies).
+- [ ] Clicking another live channel in the sidebar while the video is still dark: the previous channel's live picture does not show in between, the new channel starts from its beginning as well, and nothing stays dark or silent.
+- [ ] Pull the volume slider to 0 after the jump, then click another live channel within a few seconds: the new stream stays silent. Without touching the volume it plays at the previous volume.
+- [ ] An ad that starts right after the jump plays normally; the stream after it starts from its beginning.
+- [ ] Option off: live streams open at the live edge. Videos and clips play as usual.
+
 ## When something is not hidden
 
 The site probably changed its markup. In the browser's inspector, find the

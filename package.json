@@ -2,7 +2,7 @@
   "name": "no-spoiler",
   "version": "1.2.0",
   "private": true,
-  "description": "Browser extension that hides spoilers on YouTube and Twitch.",
+  "description": "Browser extension that hides spoilers on YouTube, Twitch and Kick.",
   "license": "MIT",
   "author": "0skater0",
   "homepage": "https://github.com/0skater0/no-spoiler#readme",

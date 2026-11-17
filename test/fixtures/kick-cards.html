@@ -1,0 +1,132 @@
+<!-- Card lists, reduced from the live site (Chrome, logged out, 2026-11-17):
+     home page (sidebar, carousel, live cards) and a channel's videos and clips tabs. -->
+<div data-sidebar="true" data-chat="true" data-theatre="false" class="group/main flex h-xvh flex-col">
+  <div id="sidebar-wrapper" data-nosnippet="true">
+    <a data-testid="sidebar-home" aria-current="page" href="/" data-expect-visible>Home</a>
+    <a data-testid="sidebar-browse" href="/browse" data-expect-visible>Browse</a>
+    <section class="flex w-full flex-col gap-2 p-3" data-expect-hidden="hideSidebarRecommended">
+      <span>Recommended</span>
+      <a data-testid="sidebar-recommended-channel-1" data-state="false" href="/livechannel"><img alt="livechannel" src="a.webp" /><span>livechannel</span><span>Chess</span><span title="1942">1.9K</span></a>
+      <a data-testid="sidebar-show-more-recommended-to-browse" data-slot="button" href="/browse">Show More</a>
+    </section>
+  </div>
+
+  <!-- Home page carousel (featured stream with its chat) -->
+  <div data-testid="carousel" class="flex w-full flex-col gap-3 lg:gap-4" data-expect-hidden="hideCarousel">
+    <a data-slot="text-link" data-type="heading" data-size="lg" data-variant="default" href="/featured"><span data-testid="carousel-channel-name">featured</span></a>
+    <a data-slot="text-link" data-type="body" data-size="sm" data-strong="true" data-variant="default" href="/featured"><span class="max-w-full truncate" data-expect-hidden="maskTitles">Caring for snakes</span></a>
+    <aside aria-hidden="false"><div id="chatroom-messages" data-testid="chatroom-messages"></div></aside>
+  </div>
+
+  <!-- Live card (home, browse, category pages) -->
+  <div data-testid="livestream-results-card" class="group/card relative flex w-full">
+    <div class="flex w-full flex-col gap-2 overflow-hidden">
+      <a data-card-link="true" aria-hidden="true" href="/livechannel" class="absolute inset-0 z-0"></a>
+      <a data-focus-target="true" data-testid="media-card-thumbnail" href="/livechannel" class="group relative aspect-video w-full overflow-hidden rounded">
+        <div aria-hidden="true" class="ui-skeleton animate-pulse rounded-md"></div>
+        <img alt="" aria-hidden="true" src="https://web.kick.com/api/v1/channels/1/thumbnail.jpeg" data-expect-hidden="blurLiveThumbnails" />
+        <div data-nosnippet="true" class="pointer-events-none flex h-5 items-center" data-expect-visible><div data-testid="live-status-dot"></div><span title="896">896</span></div>
+      </a>
+      <div class="flex w-full flex-row flex-nowrap gap-2">
+        <a href="/livechannel" class="flex h-fit w-fit shrink-0" data-expect-hidden="hideCardAvatar"><img alt="livechannel" src="avatar.webp" class="size-11 rounded-full" /></a>
+        <div class="flex w-full min-w-0 flex-col items-start">
+          <a title="livechannel" data-slot="text-link" data-type="body" data-size="sm" data-strong="true" data-variant="default" href="/livechannel" data-expect-hidden="hideCardChannelName"><span>livechannel</span></a>
+          <a title="Road to grandmaster, day 12" data-slot="text-link" data-type="body" data-size="md" data-variant="subtle" href="/livechannel">
+            <h3 class="max-w-full truncate" data-expect-hidden="maskTitles">Road to grandmaster, day 12</h3>
+          </a>
+          <div data-nosnippet="true" class="grid mt-2 w-full">
+            <div class="flex flex-wrap gap-x-1">
+              <a href="/category/chess" class="group/tag flex items-center rounded-full" data-expect-hidden="hideCardCategory"><span>Chess</span></a>
+              <button aria-disabled="true" class="group/tag flex items-center rounded-full" data-expect-hidden="hideCardTags">English</button>
+              <button aria-disabled="true" aria-label="18+" title="18+" class="group/tag flex items-center rounded-full" data-expect-hidden="hideCardTags">18+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video card of a stream that is still running (live dot, no duration) -->
+  <div data-testid="vods-card" class="group/card relative flex w-full">
+    <div class="flex w-full flex-col gap-2 overflow-hidden">
+      <a data-focus-target="true" data-testid="media-card-thumbnail" href="/somechannel/videos/01a1e812-5d00-738b-9025-00ae8673da81" class="group relative aspect-video w-full">
+        <div aria-hidden="true" class="ui-skeleton animate-pulse rounded-md"></div>
+        <img alt="" aria-hidden="true" src="https://web.kick.com/api/v1/channels/2/thumbnail.jpeg" data-expect-hidden="blurThumbnails" />
+        <div data-nosnippet="true" class="pointer-events-none flex h-5 items-center" data-expect-keep><div data-testid="live-status-dot"></div><span title="2024">2K</span></div>
+        <div class="flex flex-col items-center justify-center overflow-hidden absolute inset-0"></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Finished video card -->
+  <div data-testid="vods-card" class="group/card relative flex w-full">
+    <div class="flex w-full flex-col gap-2 overflow-hidden">
+      <a data-focus-target="true" data-testid="media-card-thumbnail" href="/somechannel/videos/01a1e637-1908-7fa4-8f9e-dff87ded45b6" class="group relative aspect-video w-full">
+        <div class="relative h-full w-full">
+          <div class="h-full w-full animate-pulse"></div>
+          <img data-thumbnail="true" src="https://web.kick.com/api/v1/videos/01a1e637/thumbnail" data-expect-hidden="blurThumbnails" />
+        </div>
+        <div class="pointer-events-none flex h-5 items-center justify-center" data-expect-hidden="hideCardDurations">05:53:36</div>
+        <div class="pointer-events-none flex h-5 items-center justify-center" data-expect-keep>
+          <span aria-hidden="true" class="flex items-center gap-1"><svg></svg><span title="12017">12K</span></span>
+          <span class="sr-only"><span title="12017">12K</span> views</span>
+        </div>
+        <div class="flex flex-col items-center justify-center overflow-hidden absolute inset-0"></div>
+      </a>
+      <div class="flex w-full flex-row flex-nowrap gap-2">
+        <a href="/somechannel" class="flex h-fit w-fit shrink-0" data-expect-hidden="hideCardAvatar"><img alt="somechannel" src="avatar.webp" /></a>
+        <div class="flex w-full min-w-0 flex-col items-start">
+          <a title="somechannel" data-slot="text-link" data-type="body" data-size="sm" data-strong="true" data-variant="default" href="/somechannel" data-expect-hidden="hideCardChannelName"><span>somechannel</span></a>
+          <a title="Grand final, map 5" data-slot="text-link" data-type="body" data-size="md" data-variant="subtle" href="/somechannel/videos/01a1e637-1908-7fa4-8f9e-dff87ded45b6">
+            <h3 class="max-w-full truncate" data-expect-hidden="maskTitles">Grand final, map 5</h3>
+          </a>
+          <div class="relative inline-flex max-w-full items-center gap-1 overflow-hidden">
+            <a href="/category/chess" class="group/tag flex items-center rounded-full" data-expect-hidden="hideCardCategory"><span>Chess</span></a>
+            <span class="inline-flex min-w-0 shrink-0"><span title="11/16/2026, 09:15 PM" data-expect-visible>12 hours ago</span></span>
+          </div>
+        </div>
+        <button data-state="closed" aria-label="More actions" type="button" data-expect-visible><svg></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clip card, hovered: the clip plays in place of the thumbnail -->
+  <div data-testid="clips-card" class="group/card relative flex w-full">
+    <div class="flex w-full flex-col gap-2 overflow-hidden">
+      <div data-focus-target="true" class="group relative aspect-video w-full overflow-hidden rounded">
+        <button aria-label="Open clip modal" class="relative aspect-video w-full overflow-hidden rounded">
+          <div class="pointer-events-none flex h-5 items-center justify-center" data-expect-hidden="hideCardDurations">00:17</div>
+          <div class="pointer-events-none flex h-5 items-center justify-center" data-expect-keep>
+            <span aria-hidden="true" class="flex items-center gap-1"><svg></svg><span title="5107">5.1K</span></span>
+            <span class="sr-only"><span title="5107">5.1K</span> views</span>
+          </div>
+          <div class="relative z-player aspect-video w-full" data-preview-visible="true">
+            <div class="absolute inset-0 z-player aspect-video bg-black opacity-100" data-expect-hidden="disableCardHoverPreview">
+              <div><video class="relative aspect-video h-full w-full" playsinline="" src="https://clips.kick.com/clips/xa/clip_01H.mp4"></video></div>
+            </div>
+            <div class="absolute inset-0 z-controls"></div>
+            <img src="https://clips.kick.com/clips/xa/clip_01H.jpg" alt="somechannel" data-thumbnail="true" data-expect-hidden="blurThumbnails" />
+          </div>
+        </button>
+      </div>
+      <div class="flex w-full flex-row flex-nowrap gap-2">
+        <a href="/somechannel" class="flex h-fit w-fit shrink-0" data-expect-hidden="hideCardAvatar"><img alt="somechannel" src="avatar.webp" /></a>
+        <div class="flex w-full min-w-0 flex-col items-start">
+          <a title="somechannel" data-slot="text-link" data-type="body" data-size="sm" data-strong="true" data-variant="default" href="/somechannel" data-expect-hidden="hideCardChannelName"><span>somechannel</span></a>
+          <h3 class="relative line-clamp-1 inline-flex w-fit" data-expect-hidden="maskTitles">
+            <button type="button" title="Insane clutch" class="max-w-full truncate text-base">Insane clutch</button>
+          </h3>
+          <div class="relative inline-flex max-w-full items-center gap-1 overflow-hidden">
+            <a href="/category/chess" class="group/tag flex items-center rounded-full" data-expect-hidden="hideCardCategory"><span>Chess</span></a>
+            <a data-slot="text-link" data-type="body" data-size="sm" data-variant="subtle" href="/somechannel/clips/clip_01H14R3YHR19FXXWG11REP7HXA"><span><span title="05/23/2023, 04:47 PM" data-expect-visible>3 years ago</span></span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top live categories on the home page stay -->
+  <section data-testid="top-live-categories" data-expect-visible>
+    <a href="/category/just-chatting"><h3 data-testid="category-Just Chatting">Just Chatting</h3></a>
+  </section>
+</div>

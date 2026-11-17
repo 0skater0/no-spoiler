@@ -1,0 +1,35 @@
+<!-- Sub-page of a live channel (/<channel>/videos, /about, /clips), reduced from the live site (Chrome, logged out, 2026-11-17).
+     A card with the stream title lies over the paused player. -->
+<div data-sidebar="true" data-chat="true" data-theatre="false" class="group/main flex h-xvh flex-col">
+  <main data-theatre-mode-container="true">
+    <div class="block w-full shrink-0 overflow-hidden bg-black absolute top-0 left-0 z-common">
+      <div class="absolute inset-0 z-player cursor-pointer" aria-hidden="true"></div>
+      <div class="flex flex-col items-start justify-center gap-4 overflow-hidden rounded bg-surface-bg-default p-5" style="transform: none;">
+        <div class="rounded bg-[#070809] px-2 py-0.5"><span class="text-sm font-bold uppercase" data-expect-visible>LIVE</span></div>
+        <div class="flex justify-between gap-4">
+          <span class="line-clamp-2 overflow-hidden leading-[1.2] font-bold text-ellipsis" data-expect-hidden="maskTitles">Road to grandmaster, day 12</span>
+          <button data-scope="button" data-part="root" aria-label="Unmute" type="button" data-slot="button" data-variant="default" data-size="sm" data-icon-only="true" data-expect-visible><svg></svg></button>
+        </div>
+        <div class="flex items-center gap-1 text-sm font-bold" data-expect-visible><svg></svg><span class="relative flex items-center gap-x-1"><span><span class="tabular-nums">2,210</span></span> watching</span></div>
+        <button data-scope="button" data-part="root" class="w-full" type="button" data-slot="button" data-variant="primary" data-size="md" data-expect-visible><span data-slot="button-label">Watch now</span></button>
+      </div>
+      <div class="absolute top-7 right-7 z-controls flex items-center gap-2">
+        <div class="top-7 right-7 z-controls hidden transition-opacity group-data-[chat=false]/main:block static">
+          <button data-scope="button" data-part="root" type="button" data-slot="button" data-variant="default" data-size="md"><span data-slot="button-label">Chat</span></button>
+        </div>
+      </div>
+      <div id="injected-channel-player" class="relative m-auto aspect-video max-h-full bg-black">
+        <div class="relative z-[1] h-full w-full bg-black">
+          <div id="injected-embedded-channel-player-video"><div class="relative aspect-video w-full"><video id="video-player" class="player-no-controls h-full w-full"></video></div></div>
+        </div>
+      </div>
+    </div>
+    <div id="channel-content">
+      <h1 data-testid="channel-username"><span data-slot="button-label" data-expect-visible>somechannel</span></h1>
+      <div class="flex gap-2">
+        <button data-scope="button" data-part="root" type="button" data-slot="button" data-variant="primary" data-size="lg"><span data-slot="button-label" data-expect-visible>Follow</span></button>
+      </div>
+      <a data-testid="channel-videos-tab" href="/somechannel/videos" data-expect-visible>Videos</a>
+    </div>
+  </main>
+</div>

@@ -15,10 +15,16 @@ What the extension stores, in the browser's extension storage:
 
 What the extension reads:
 
-- the pages of the supported sites you allowed (YouTube, Twitch)
+- the pages of the supported sites you allowed (YouTube, Twitch, Kick)
   to hide or change elements on them,
 - the address of the current tab when you open the popup, to show the
-  matching settings.
+  matching settings,
+- only with "Start live streams from the beginning" on: the player volume
+  that Twitch keeps in its page storage (`volume` in `localStorage`) and Kick
+  in its cookie `volume`. The extension silences the player while it moves the stream to
+  its beginning; if the site saved that silenced volume, the extension sets
+  the previous value back, or removes the entry if there was none before.
+  The extension does not send the value anywhere.
 
 Removing the extension removes all stored data.
 

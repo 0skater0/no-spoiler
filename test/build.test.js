@@ -55,6 +55,11 @@ describe("manifests", () => {
     for (const k of Object.values(cr)) expect(k).not.toMatch(/Ctrl\+Alt|Alt\+Ctrl/);
   });
 
+  // The Chrome Web Store rejects an upload whose manifest description is longer.
+  it("keeps the description within the Chrome Web Store limit of 132 characters", () => {
+    for (const b of ["firefox", "chrome"]) expect(built[b].manifest.description.length).toBeLessThanOrEqual(132);
+  });
+
   it("is newer than the last MV2 release", () => {
     const [major] = built.firefox.manifest.version.split(".").map(Number);
     expect(major).toBeGreaterThanOrEqual(1);
@@ -88,7 +93,7 @@ describe("manifests", () => {
     for (const b of ["firefox", "chrome"]) {
       expect(built[b].manifest.host_permissions, b).toBeUndefined();
       expect(built[b].manifest.content_scripts, b).toBeUndefined();
-      expect(built[b].manifest.optional_host_permissions, b).toEqual(["*://*.youtube.com/*", "https://*.twitch.tv/*"]);
+      expect(built[b].manifest.optional_host_permissions, b).toEqual(["*://*.youtube.com/*", "https://*.twitch.tv/*", "https://kick.com/*", "https://*.kick.com/*"]);
     }
   });
 

@@ -122,7 +122,7 @@ No Spoilers
 ### Summary (AMO ≤ 250 characters; Chrome takes the manifest description)
 
 ```
-Hide spoilers on YouTube and Twitch: video time, progress bars, durations, chat, titles and recommendations. Choose what you want to see, and jump through videos without seeing where you are.
+Hide spoilers on YouTube, Twitch and Kick: video time, progress bars, durations, chat, titles and recommendations. Choose what you want to see, and jump through videos without seeing where you are.
 ```
 
 ### Description, AMO (Markdown)
@@ -148,6 +148,13 @@ No Spoilers hides what gives the result away, and lets you decide what else you 
 - End-of-video recommendations, stream uptime
 - Optional: titles, category, tags, streamer avatar and name, home page carousel, sidebar recommendations
 
+**Kick**
+
+- Time, seek bar and seek preview in the player, stream uptime
+- Lengths of videos and clips, blurred thumbnails, clip previews on hover
+- Chat replay on videos (collapsed with Kick's own button)
+- Optional: start live streams from the beginning, titles, category, tags, streamer avatar and name, home page carousel, sidebar recommendations
+
 **Jump buttons**
 
 Jump back and forward without seeing where you are: buttons next to play and in the middle of the video. You choose the jump sizes.
@@ -155,7 +162,7 @@ Jump back and forward without seeing where you are: buttons next to play and in 
 **Good to know**
 
 - The whole protection switches on and off with one click on the icon or with `Ctrl+Alt+U`.
-- You choose the sites: the add-on runs only on YouTube and/or Twitch after you allowed them.
+- You choose the sites: the add-on runs only on the sites you allowed (YouTube, Twitch, Kick).
 - No data collection, no network requests.
 - Open source: [github.com/0skater0/no-spoiler](https://github.com/0skater0/no-spoiler)
 ```
@@ -181,12 +188,18 @@ TWITCH
 • End-of-video recommendations, stream uptime
 • Optional: titles, category, tags, streamer avatar and name, home page carousel, sidebar recommendations
 
+KICK
+• Time, seek bar and seek preview in the player, stream uptime
+• Lengths of videos and clips, blurred thumbnails, clip previews on hover
+• Chat replay on videos (collapsed with Kick's own button)
+• Optional: start live streams from the beginning, titles, category, tags, streamer avatar and name, home page carousel, sidebar recommendations
+
 JUMP BUTTONS
 Jump back and forward without seeing where you are: buttons next to play and in the middle of the video. You choose the jump sizes.
 
 GOOD TO KNOW
 • The whole protection switches on and off with one click on the icon or with Alt+Shift+U.
-• You choose the sites: the extension runs only on YouTube and/or Twitch after you allowed them.
+• You choose the sites: the extension runs only on the sites you allowed (YouTube, Twitch, Kick).
 • No data collection, no network requests.
 • Open source: https://github.com/0skater0/no-spoiler
 ```
@@ -205,7 +218,7 @@ Hides spoiler-prone page elements (video time, progress bars, durations, chat, t
   ```
 - `scripting`:
   ```
-  Registers the content script of a site (YouTube, Twitch) after the user granted the optional access to it, and applies the extension to tabs that were already open.
+  Registers the content script of a site (YouTube, Twitch, Kick) after the user granted the optional access to it, and applies the extension to tabs that were already open.
   ```
 - `activeTab`:
   ```
@@ -213,7 +226,7 @@ Hides spoiler-prone page elements (video time, progress bars, durations, chat, t
   ```
 - Host permissions:
   ```
-  The extension requests no host permissions at install time. Access to *://*.youtube.com/* and https://*.twitch.tv/* is optional and requested only when the user enables that site; the content script then hides elements on its pages.
+  The extension requests no host permissions at install time. Access to *://*.youtube.com/*, https://*.twitch.tv/*, https://kick.com/* and https://*.kick.com/* is optional and requested only when the user enables that site; the content script then hides elements on its pages.
   ```
 - Remote code: none.
 
@@ -250,7 +263,7 @@ because the rendering differs slightly between machines. On one machine the
 output is byte-for-byte reproducible.
 
 Only `screenshot-2` is made by hand. Screenshots of the real
-sites (YouTube, Twitch) have to be taken by hand too; resize them to 1280×800
+sites (YouTube, Twitch, Kick) have to be taken by hand too; resize them to 1280×800
 without transparency and add a caption to `captions.json`. The file name order
 is the display order.
 

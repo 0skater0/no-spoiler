@@ -27,7 +27,7 @@ body:
       label: How to reproduce
       description: "Steps to reproduce the behavior."
       placeholder: |
-        1. Open YouTube or Twitch
+        1. Open YouTube, Twitch or Kick
         2. Navigate to a video
         3. Enable the extension
         4. Click on [...]
@@ -59,7 +59,7 @@ body:
     attributes:
       label: Page URL
       description: "The URL where the issue occurs (if applicable)."
-      placeholder: "e.g. https://www.youtube.com/watch?v=... or https://www.twitch.tv/videos/..."
+      placeholder: "e.g. https://www.youtube.com/watch?v=..., https://www.twitch.tv/videos/... or https://kick.com/<channel>/videos/..."
     validations:
       required: false
   - type: input

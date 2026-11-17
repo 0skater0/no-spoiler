@@ -19,10 +19,11 @@ Only the latest published release receives security updates. Older versions are 
 | `activeTab` | Lets the popup read the address of the current tab to show that site's settings first. No browsing history is read. |
 | Optional host access to `*.youtube.com` | Runs the content script on YouTube, only after you allowed it. |
 | Optional host access to `*.twitch.tv` | Runs the content script on Twitch, only after you allowed it. |
+| Optional host access to `kick.com` and `*.kick.com` | Runs the content script on Kick, only after you allowed it. |
 
 The extension asks for no site access at install time. You grant each site on the welcome page, in the popup or on the settings page, and can revoke it in the browser's extension settings.
 
-The content scripts change the pages' appearance with CSS classes and, where CSS is not enough, small DOM changes (data attributes, inserted jump buttons, moved `title` attributes). They do not read form fields, cookies or account data, do not send anything anywhere, and load no remote code. The extension makes no network requests.
+The content scripts change the pages' appearance with CSS classes and, where CSS is not enough, small DOM changes (data attributes, inserted jump buttons, moved `title` attributes). They do not read form fields, cookies or account data, do not send anything anywhere, and load no remote code. The one exception: with "Start live streams from the beginning" on, the player volume that Twitch keeps in its page storage (`volume` in `localStorage`) and Kick in its `volume` cookie is read, and set back, or removed if it did not exist before, if the player saved the silenced volume there while the stream was covered. The extension makes no network requests.
 
 ## Dependency triage policy
 

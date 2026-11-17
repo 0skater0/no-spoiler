@@ -1,0 +1,60 @@
+<!-- Live channel page (/<channel>), reduced from the live site (Chrome, logged out, 2026-11-17).
+     Hovered player: the uptime sits next to the LIVE button; the seek bar rewinds the whole stream. -->
+<div data-sidebar="true" data-chat="true" data-theatre="false" class="group/main flex h-xvh flex-col">
+  <main data-theatre-mode-container="true">
+    <div id="injected-channel-player" class="relative m-auto aspect-video">
+      <div class="relative z-[1] h-full w-full bg-black">
+        <div id="injected-embedded-channel-player-video">
+          <div class="relative aspect-video w-full">
+            <video id="video-player" class="player-no-controls h-full w-full"></video>
+            <div class="pointer-events-none absolute inset-0 grid grid-cols-1">
+              <div class="grid-row-2 pointer-events-auto min-h-0 overflow-hidden">
+                <div class="absolute bottom-0 left-0 z-controls flex w-full flex-row items-center justify-between">
+                  <div class="flex flex-row items-center gap-2 lg:gap-0">
+                    <button data-scope="tooltip" data-part="trigger" aria-label="Pause (space)" type="button" data-expect-visible><svg></svg></button>
+                    <div class="group/volume flex items-center gap-2 xl:gap-4">
+                      <button aria-label="Unmute (m)" type="button" data-expect-visible><svg></svg></button>
+                    </div>
+                    <span class="text-xs font-bold tabular-nums lg:text-sm px-2" data-expect-hidden="hideLiveUptime">03:39:42</span>
+                    <button class="group inline-flex items-center" data-expect-visible><svg></svg><span class="text-sm font-semibold">LIVE</span></button>
+                  </div>
+                  <div class="flex flex-row items-center gap-2 lg:gap-0">
+                    <button data-state="closed" data-testid="video-player-clip" data-expect-visible><span class="text-sm">Clip</span></button>
+                    <button aria-label="Theatre Mode (t)" data-testid="video-player-theatre-mode" type="button"><svg></svg></button>
+                  </div>
+                  <div class="group/seekbar absolute -top-7 left-0 h-5 w-full" data-expect-hidden="hideSeekbar">
+                    <div class="absolute top-2.5 w-full" data-expect-hidden="hideSeekbarPreview">
+                      <span class="absolute -top-10 rounded-md p-1 text-xs font-bold tabular-nums block">-02:38:03</span>
+                    </div>
+                    <div aria-valuemax="13181.385" aria-valuemin="0" aria-valuenow="13181.385" aria-valuetext="100%" role="progressbar" data-state="complete" aria-label="Loaded progress">
+                      <div data-state="complete" class="h-full w-full bg-white/30"></div>
+                    </div>
+                    <span dir="ltr" data-orientation="horizontal" aria-disabled="false">
+                      <span data-orientation="horizontal"><span data-orientation="horizontal" style="left: 0%; right: 0%;"></span></span>
+                      <span><span role="slider" aria-label="Current video time" aria-valuemin="0" aria-valuemax="13181385" aria-valuenow="13181385" tabindex="0"></span></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="channel-content">
+      <img alt="somechannel" data-testid="channel-avatar" src="avatar.webp" data-expect-visible />
+      <h1 data-testid="channel-username"><span data-slot="button-label" data-expect-visible>somechannel</span></h1>
+      <h2 title="Road to grandmaster, day 12" data-testid="livestream-title" data-expect-hidden="maskTitles">Road to grandmaster, day 12</h2>
+      <a href="/category/chess" data-expect-visible>Chess</a>
+      <button aria-disabled="true" aria-label="English" title="English" data-expect-visible>English</button>
+      <div data-testid="viewer-count" data-expect-visible>1,942</div>
+      <a data-testid="channel-videos-tab" href="/somechannel/videos" data-expect-visible>Videos</a>
+    </div>
+  </main>
+  <div class="relative">
+    <div id="channel-chatroom" data-is-resizing="false" class="h-full max-h-full w-full flex grow flex-col" data-expect-visible>
+      <button aria-label="Collapse chat" type="button"><svg></svg></button>
+      <div id="chatroom-messages" data-testid="chatroom-messages"></div>
+    </div>
+  </div>
+</div>

@@ -8,6 +8,10 @@ All notable changes to this extension go here. The format is based on [Keep a Ch
 
 - Twitch: new option to start live streams from the beginning (off by default). It needs Twitch's rewind, which requires Twitch Turbo or a subscription to the channel. It only works on channels that keep their videos. When you open a channel that is live right now, the stream jumps to its start instead of showing the live picture. The video stays dark and silent until the jump is done. If rewind is not available, or the jump takes more than a few seconds, the stream plays live. If you click "Live" afterwards, the stream stays live; opening the channel again starts from the beginning.
 - Twitch: new option to hide the time in the player of a live stream (on by default). This is the time next to the "Live" badge and, after a rewind, the distance to the live picture. Both reveal how long the stream has been running.
+- Kick is supported as a third site. As with Twitch, access is optional and granted from the popup or the welcome page.
+- Kick: the current time, duration, seek bar and seek preview in the player, the stream uptime, video and clip lengths, blurred thumbnails and clip previews on cards, and the chat replay on videos (collapsed with Kick's own button) are hidden by default.
+- Kick: titles, category, tags, streamer avatar and name, the home page carousel and the recommended channels in the sidebar can be hidden as well. Jump buttons can be added to videos and clips.
+- Kick: new option to start live streams from the beginning (off by default). Kick lets everyone rewind a running stream, no subscription needed. Your volume is kept after the jump, a reload or a channel switch.
 
 ### Changed
 

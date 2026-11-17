@@ -25,9 +25,10 @@ const APPROVAL_NOTES = [
   "core/platforms.generated.js is plain data generated from src/platforms/*/platform.json by scripts/build.mjs.",
   `Source and build instructions: https://github.com/0skater0/no-spoiler/tree/v${version} (npm ci && npm run build).`,
   "",
-  "How to test: open any YouTube video; the player time, progress bar, comments and recommendations are hidden.",
-  "The toolbar popup switches the protection and the individual options. Twitch access is an optional host",
-  "permission, requested from the popup; then open a Twitch video (twitch.tv/videos/...) to see the seek bar hidden.",
+  "How to test: site access to YouTube, Twitch and Kick is an optional host permission. Allow a site on the",
+  "welcome page that opens after installing, or later from the toolbar popup. Then open a video on that site",
+  "(youtube.com/watch?v=..., twitch.tv/videos/..., kick.com/<channel>/videos/...): the player time and the seek bar",
+  "are hidden. The toolbar popup switches the protection and the individual options.",
   "No network requests, no remote code, no data collection.",
 ].join("\n");
 const tmp = mkdtempSync(path.join(os.tmpdir(), "ns-amo-"));

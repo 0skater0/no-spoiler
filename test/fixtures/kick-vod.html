@@ -1,0 +1,72 @@
+<!-- Video page (/<channel>/videos/<id>), reduced from the live site (Chrome, logged out, 2026-11-17).
+     The control bar only exists while the player is hovered; this is its hovered state. -->
+<div data-sidebar="true" data-chat="true" data-theatre="false" class="group/main flex h-xvh flex-col">
+  <main data-theatre-mode-container="true">
+    <div class="relative block w-full shrink-0 overflow-hidden bg-black">
+      <div class="absolute top-7 right-7 z-controls flex items-center gap-2">
+        <div class="top-7 right-7 z-controls hidden transition-opacity group-data-[chat=false]/main:block static" data-expect-hidden="hideVodChatReplay">
+          <button data-scope="button" data-part="root" type="button" data-slot="button" data-variant="default" data-size="md"><span data-slot="button-label">Chat</span></button>
+        </div>
+      </div>
+      <div id="injected-channel-player" class="relative m-auto aspect-video">
+        <div class="relative z-[1] h-full w-full bg-black">
+          <div id="injected-embedded-channel-player-video">
+            <div class="relative aspect-video w-full">
+              <video id="video-player" class="player-no-controls h-full w-full"></video>
+              <div class="pointer-events-none absolute inset-0 grid grid-cols-1">
+                <div class="grid-row-2 pointer-events-auto min-h-0 overflow-hidden">
+                  <div class="absolute bottom-0 left-0 z-controls flex w-full flex-row items-center justify-between" data-expect-visible>
+                    <div class="flex flex-row items-center gap-2 lg:gap-0">
+                      <button data-scope="tooltip" data-part="trigger" aria-label="Pause (space)" type="button" data-expect-visible><svg></svg></button>
+                      <div class="group/volume flex items-center gap-2 xl:gap-4">
+                        <button data-scope="tooltip" data-part="trigger" aria-label="Unmute (m)" type="button" data-expect-visible><svg></svg></button>
+                        <div class="hidden betterhover:group-hover/volume:flex">
+                          <span data-orientation="horizontal" aria-disabled="false"><span role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></span></span>
+                        </div>
+                      </div>
+                      <span class="text-xs font-bold whitespace-nowrap tabular-nums px-2 pr-0" data-expect-hidden="hideCurrentTime">00:31</span>&nbsp;/&nbsp;<span class="text-xs font-bold whitespace-nowrap tabular-nums px-0" data-expect-hidden="hideDuration">05:53:36</span>
+                    </div>
+                    <div class="flex flex-row items-center gap-2 lg:gap-0">
+                      <button aria-label="Picture in Picture" data-testid="video-player-pip" type="button" data-expect-visible><svg></svg></button>
+                      <button aria-label="Clip (c)" data-testid="video-player-clip" type="button"><svg></svg></button>
+                      <button aria-label="Fullscreen (f)" data-testid="video-player-fullscreen" type="button" data-expect-visible><svg></svg></button>
+                    </div>
+                    <div class="group/seekbar absolute -top-7 left-0 h-5 w-full" data-expect-hidden="hideSeekbar">
+                      <div class="absolute top-2.5 w-full" data-expect-hidden="hideSeekbarPreview">
+                        <span class="absolute -top-10 rounded-md p-1 text-xs font-bold tabular-nums block">02:28:31</span>
+                        <img alt="" src="thumbnail-sheet-0.webp" class="absolute rounded-lg" />
+                      </div>
+                      <div aria-valuemax="21216.967" aria-valuemin="0" aria-valuenow="70.035" aria-valuetext="0%" role="progressbar" data-state="loading" aria-label="Loaded progress">
+                        <div class="absolute h-full bg-white/50"></div>
+                        <div data-state="loading" class="h-full w-full bg-white/30"></div>
+                      </div>
+                      <span dir="ltr" data-orientation="horizontal" aria-disabled="false">
+                        <span data-orientation="horizontal"><span data-orientation="horizontal" style="left: 0%; right: 99.8%;"></span></span>
+                        <span><span role="slider" aria-label="Current video time" aria-valuemin="0" aria-valuemax="21216967" aria-valuenow="33577.985" tabindex="0"></span></span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="relative flex flex-col gap-4 px-4">
+      <span data-testid="channel-username"><a data-slot="text-link" data-type="heading" href="/somechannel" data-expect-visible>somechannel</a></span>
+      <h1 title="Grand final, map 5" data-testid="livestream-title" data-expect-hidden="maskTitles">Grand final, map 5</h1>
+      <a href="/category/chess" data-expect-visible>Chess</a>
+      <span title="2026-11-16T21:15:33.000Z"><span title="11/16/2026, 10:15 PM" data-expect-visible>12 hours ago</span></span>
+    </div>
+  </main>
+  <div class="relative">
+    <div id="channel-chatroom" class="h-full max-h-full w-full flex grow flex-col" data-expect-hidden="hideVodChatReplay">
+      <div class="flex items-center">
+        <button data-scope="button" data-part="root" aria-label="Collapse chat" type="button" data-slot="button"><svg></svg></button>
+        <span class="text-sm font-bold">Chat Replay</span>
+      </div>
+      <div id="chatroom-messages" data-testid="chatroom-messages"></div>
+    </div>
+  </div>
+</div>

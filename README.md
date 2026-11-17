@@ -13,7 +13,7 @@ recommendations and end screens. Beyond spoilers, it lets you decide what
 else you want to see, for example titles, tags or sidebar recommendations,
 and adds jump buttons to the player.
 
-Supported sites: **YouTube** and **Twitch**.
+Supported sites: **YouTube**, **Twitch** and **Kick**.
 
 ![No Spoilers popup with the YouTube settings](docs/store/screenshot-1-popup-1280x800.png)
 
@@ -22,7 +22,7 @@ Supported sites: **YouTube** and **Twitch**.
 The toolbar icon shows whether protection is on (red) or off (grey). Click it
 to open the popup:
 
-- On YouTube or Twitch, the popup shows that site's settings at the top and
+- On YouTube, Twitch or Kick, the popup shows that site's settings at the top and
   the other sites collapsed below.
 - On any other page, it shows an overview with one row per site.
 - "All settings" opens the options page with every site and the keyboard
@@ -83,9 +83,31 @@ Chrome on `chrome://extensions/shortcuts`.
 | Hide stream uptime | on |
 | Hide stream time and distance to live in the player | on |
 | Start live streams from the beginning (needs Twitch Turbo or a channel subscription) | off |
+| **Kick** | |
+| Hide current time in the player | on |
+| Hide duration in the player | on |
+| Hide seek bar | on |
+| Hide seek bar hover preview | on |
+| Jump buttons in the player bar on videos, next to play (sizes selectable, default 5 and 10 min) | off |
+| Jump buttons in the middle of videos (on hover, sizes selectable, default 1, 5 and 10 min) | off |
+| Collapse chat replay on videos (Kick's own collapse button) | on |
+| Blur video and clip thumbnails | on |
+| Blur live stream thumbnails | off |
+| Hide video and clip lengths | on |
+| Disable clip previews on hover | on |
+| Hide category (on cards) | off |
+| Hide tags (on cards) | off |
+| Hide streamer avatar (on cards) | off |
+| Hide streamer name (on cards) | off |
+| Hide titles of streams, videos and clips | off |
+| Hide the full title on hover (tooltip) | off |
+| Hide featured carousel on the home page | off |
+| Hide recommended channels in the sidebar | off |
+| Hide stream uptime in the player | on |
+| Start live streams from the beginning (Kick lets everyone rewind a running stream) | off |
 
 No Spoilers only runs on the sites you allow: after installing, a welcome
-page lets you grant access to YouTube, Twitch or both.
+page lets you grant access to YouTube, Twitch and Kick separately.
 
 ## Installation
 
