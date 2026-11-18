@@ -38,12 +38,10 @@ export function planPreviewSync(remote, local) {
 // (addon_submission_throttles in src/olympia/api/throttling.py of mozilla/addons-server).
 // A request rejected by one window still counts in the others. A sync with three
 // screenshots makes 6 writes plus one DELETE per old preview, so after a release it runs
-// into the hourly window and later writes wait for a slot.
+// into the hourly window and later writes wait for a slot. The waits AMO names do not
+// follow these windows exactly (one was 3729 s), so only the caller's deadline caps them.
 const THROTTLE_RETRIES = 6;
 const DEFAULT_THROTTLE_S = 60;
-// One full hourly window plus slack. A longer wait means the daily limit, which no
-// workflow step can sit out.
-const MAX_THROTTLE_WAIT_MS = 61 * 60_000;
 
 // AMO names the wait in Retry-After or in the detail text ("Expected available in 56 seconds").
 // One second of slack, so the retry does not arrive just before the window opens.
@@ -86,7 +84,7 @@ export function createAmoClient({
       const res = await fetchImpl(url, { method, headers, body });
       const text = await res.text();
       const delay = res.status === 429 ? throttleDelayMs(res, text) : 0;
-      if (delay && delay <= MAX_THROTTLE_WAIT_MS && now() + delay <= deadline && attempt < THROTTLE_RETRIES) {
+      if (delay && now() + delay <= deadline && attempt < THROTTLE_RETRIES) {
         // A long silent wait would look like a hung run in the workflow log.
         log(`AMO throttled, waiting ${delay / 1000} s before ${method} ${path}`);
         await sleep(delay);

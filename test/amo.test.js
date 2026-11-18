@@ -110,15 +110,14 @@ describe("AMO client throttling", () => {
     expect(log.mock.calls.flat().join(" ")).not.toMatch(/s3cret|JWT/);
   });
 
-  it("fails at once instead of sleeping through a window of more than 61 minutes", async () => {
-    const fetchImpl = mockFetch(() => throttled(3660));
+  it("sits out a wait of more than an hour, as AMO named it on 2026-11-18", async () => {
+    let calls = 0;
+    const fetchImpl = mockFetch(() => (++calls === 1 ? throttled(3729) : { status: 204 }));
     const sleep = vi.fn(async () => {});
-    const log = vi.fn();
-    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep, log });
-    await expect(client.remove(7)).rejects.toThrow(/429.*3660/);
-    expect(sleep).not.toHaveBeenCalled();
-    expect(log).not.toHaveBeenCalled();
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep, log: () => {} });
+    await client.remove(7);
+    expect(sleep).toHaveBeenCalledWith(3_730_000);
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
   describe("time budget", () => {
