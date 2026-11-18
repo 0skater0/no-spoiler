@@ -33,12 +33,17 @@ export function planPreviewSync(remote, local) {
   };
 }
 
-// AMO throttles bursts of writes; a sync makes several in a row.
-const THROTTLE_RETRIES = 3;
+// AMO limits writes per user to 3 per minute, 10 per hour and 24 per day, in sliding
+// windows shared with all add-on writes, the version submission included
+// (addon_submission_throttles in src/olympia/api/throttling.py of mozilla/addons-server).
+// A request rejected by one window still counts in the others. A sync with three
+// screenshots makes 6 writes plus one DELETE per old preview, so after a release it runs
+// into the hourly window and later writes wait for a slot.
+const THROTTLE_RETRIES = 6;
 const DEFAULT_THROTTLE_S = 60;
-// A longer window (AMO has hourly and daily limits too) would run into the job timeout,
-// which skips the rollback and the warning; failing at once keeps both.
-const MAX_THROTTLE_WAIT_MS = 121_000;
+// One full hourly window plus slack. A longer wait means the daily limit, which no
+// workflow step can sit out.
+const MAX_THROTTLE_WAIT_MS = 61 * 60_000;
 
 // AMO names the wait in Retry-After or in the detail text ("Expected available in 56 seconds").
 // One second of slack, so the retry does not arrive just before the window opens.
@@ -51,10 +56,27 @@ function throttleDelayMs(res, text) {
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export function createAmoClient({ issuer, secret, addon, fetchImpl = globalThis.fetch, api = AMO_API, sleep = wait }) {
+/**
+ * @param {object} options
+ * @param {number} [options.deadline] epoch ms; a throttle wait that would end later fails at once,
+ *   so the caller can still report before an outer timeout kills the process
+ * @param {(line: string) => void} [options.log] receives one line per throttle wait
+ */
+export function createAmoClient({
+  issuer,
+  secret,
+  addon,
+  fetchImpl = globalThis.fetch,
+  api = AMO_API,
+  sleep = wait,
+  log = console.log,
+  now = Date.now,
+  deadline = Infinity,
+}) {
   const base = `${api}/addons/addon/${encodeURIComponent(addon)}`;
 
   async function call(method, url, body) {
+    const path = url.replace(api, "");
     const json = body !== undefined && !(body instanceof FormData);
     if (json) body = JSON.stringify(body);
     for (let attempt = 0; ; attempt++) {
@@ -64,11 +86,13 @@ export function createAmoClient({ issuer, secret, addon, fetchImpl = globalThis.
       const res = await fetchImpl(url, { method, headers, body });
       const text = await res.text();
       const delay = res.status === 429 ? throttleDelayMs(res, text) : 0;
-      if (delay && delay <= MAX_THROTTLE_WAIT_MS && attempt < THROTTLE_RETRIES) {
+      if (delay && delay <= MAX_THROTTLE_WAIT_MS && now() + delay <= deadline && attempt < THROTTLE_RETRIES) {
+        // A long silent wait would look like a hung run in the workflow log.
+        log(`AMO throttled, waiting ${delay / 1000} s before ${method} ${path}`);
         await sleep(delay);
         continue;
       }
-      if (!res.ok) throw new Error(`${method} ${url.replace(api, "")}: ${res.status} ${text.slice(0, 300)}`);
+      if (!res.ok) throw new Error(`${method} ${path}: ${res.status} ${text.slice(0, 300)}`);
       return text ? JSON.parse(text) : {};
     }
   }
@@ -94,11 +118,14 @@ export function createAmoClient({ issuer, secret, addon, fetchImpl = globalThis.
 
 /**
  * Uploads first and deletes afterwards, so the listing never runs empty. The
- * position is set again by PATCH because the documented upload field name is
- * inconsistent ("postion").
+ * PATCH is needed because AMO cannot take the caption with the upload; it sets
+ * the position again because the documented upload field name is inconsistent
+ * ("postion").
  * If an upload or PATCH fails, the previews created in this run are removed
- * again, so the old set stays alone. If only deleting an old preview fails, the
- * new set is complete and stays; the error names the leftovers.
+ * again, so the old set stays alone. That rollback is best effort: after a
+ * throttle failure its DELETEs hit the same full window and fail too, and the
+ * error names the previews left behind. If only deleting an old preview fails,
+ * the new set is complete and stays; the error names the leftovers.
  */
 export async function applyPreviewSync(client, plan, readFile, log = console.log) {
   const created = [];

@@ -156,8 +156,10 @@ jobs:
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
         if: env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != ''
         continue-on-error: true
-        # AMO throttles bursts of writes; the script waits and retries.
-        timeout-minutes: 25
+        # AMO allows 3 writes per minute, 10 per hour and 24 per day, shared with the version
+        # submission; a sync makes 6 writes plus one DELETE per old preview. The script waits
+        # for free slots and gives up on its own before this timeout.
+        timeout-minutes: 180
         run: node scripts/sync-amo-previews.mjs --annotate
 
   chrome:

@@ -66,7 +66,7 @@ describe("AMO client throttling", () => {
     let calls = 0;
     const fetchImpl = mockFetch(() => (++calls === 1 ? throttled(56) : { status: 201, body: { id: 5 } }));
     const sleep = vi.fn(async () => {});
-    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep });
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep, log: () => {} });
     expect(await client.upload("a.png", Buffer.alloc(1), 0)).toEqual({ id: 5 });
     expect(fetchImpl).toHaveBeenCalledTimes(2);
     expect(sleep).toHaveBeenCalledWith(57_000);
@@ -78,7 +78,7 @@ describe("AMO client throttling", () => {
       ++calls === 1 ? { ...throttled(56), headers: { "Retry-After": "3" } } : { status: 204 },
     );
     const sleep = vi.fn(async () => {});
-    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep });
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep, log: () => {} });
     await client.remove(7);
     expect(sleep).toHaveBeenCalledWith(4_000);
   });
@@ -87,26 +87,71 @@ describe("AMO client throttling", () => {
     let calls = 0;
     const fetchImpl = mockFetch(() => (++calls === 1 ? { status: 429, body: {} } : { status: 204 }));
     const sleep = vi.fn(async () => {});
-    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep });
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep, log: () => {} });
     await client.remove(7);
     expect(sleep).toHaveBeenCalledWith(61_000);
   });
 
-  it("fails at once instead of sleeping through a long throttle window", async () => {
-    const fetchImpl = mockFetch(() => ({ ...throttled(3600), headers: { "Retry-After": "3600" } }));
+  it("sits out several long throttle windows in a row and logs each wait", async () => {
+    let calls = 0;
+    const fetchImpl = mockFetch(() => (++calls === 1 ? throttled(839) : calls === 2 ? throttled(3599) : { status: 204 }));
     const sleep = vi.fn(async () => {});
-    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep });
-    await expect(client.remove(7)).rejects.toThrow(/429.*3600/);
+    const log = vi.fn();
+    const client = createAmoClient({ issuer: "s3cret-issuer", secret: "s3cret", addon, fetchImpl, sleep, log });
+    await client.remove(7);
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    expect(sleep).toHaveBeenNthCalledWith(1, 840_000);
+    expect(sleep).toHaveBeenNthCalledWith(2, 3_600_000);
+    const path = `/addons/addon/${encodeURIComponent(addon)}/previews/7/`;
+    expect(log.mock.calls).toEqual([
+      [`AMO throttled, waiting 840 s before DELETE ${path}`],
+      [`AMO throttled, waiting 3600 s before DELETE ${path}`],
+    ]);
+    expect(log.mock.calls.flat().join(" ")).not.toMatch(/s3cret|JWT/);
+  });
+
+  it("fails at once instead of sleeping through a window of more than 61 minutes", async () => {
+    const fetchImpl = mockFetch(() => throttled(3660));
+    const sleep = vi.fn(async () => {});
+    const log = vi.fn();
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep, log });
+    await expect(client.remove(7)).rejects.toThrow(/429.*3660/);
     expect(sleep).not.toHaveBeenCalled();
+    expect(log).not.toHaveBeenCalled();
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
-  it("gives up after a few throttled attempts", async () => {
+  describe("time budget", () => {
+    const now = () => 1_000_000;
+    const budgetClient = (fetchImpl, sleep, log, budgetMs) =>
+      createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep, log, now, deadline: now() + budgetMs });
+
+    it("waits when the window opens right at the deadline", async () => {
+      let calls = 0;
+      const fetchImpl = mockFetch(() => (++calls === 1 ? throttled(839) : { status: 204 }));
+      const sleep = vi.fn(async () => {});
+      const log = vi.fn();
+      await budgetClient(fetchImpl, sleep, log, 840_000).remove(7);
+      expect(sleep).toHaveBeenCalledWith(840_000);
+      expect(log).toHaveBeenCalledTimes(1);
+    });
+
+    it("fails at once without logging when the wait would run past the deadline", async () => {
+      const fetchImpl = mockFetch(() => throttled(839));
+      const sleep = vi.fn(async () => {});
+      const log = vi.fn();
+      await expect(budgetClient(fetchImpl, sleep, log, 839_999).remove(7)).rejects.toThrow(/429.*839/);
+      expect(sleep).not.toHaveBeenCalled();
+      expect(log).not.toHaveBeenCalled();
+    });
+  });
+
+  it("gives up after six throttled retries", async () => {
     const fetchImpl = mockFetch(() => throttled(1));
     const sleep = vi.fn(async () => {});
-    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep });
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep, log: () => {} });
     await expect(client.remove(7)).rejects.toThrow(/429/);
-    expect(fetchImpl).toHaveBeenCalledTimes(4);
+    expect(fetchImpl).toHaveBeenCalledTimes(7);
   });
 });
 

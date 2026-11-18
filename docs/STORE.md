@@ -279,13 +279,24 @@ changed). The release always has `docs/store/*.png` attached.
   change with the tag, so the store shows them while the new version is
   still in the AMO review. If an upload fails, the script removes the
   previews it already created; if only deleting the old ones fails, the new
-  set stays and the old ones remain next to it. AMO throttles bursts of
-  writes; the script waits the time AMO names (up to two minutes) and tries
-  again. A failure leaves a warning in the run and a note in the run summary;
-  the release goes on. To repair, run the workflow *Sync AMO screenshots*
-  (*Actions* tab, *Run workflow*, choose the release tag, or `main` while its
-  screenshots are those of the release): it replaces all previews on the
-  listing with the ones of that ref, *dry-run* only prints the plan. Locally
+  set stays and the old ones remain next to it. AMO allows 3 writes per
+  minute, 10 per hour and 24 per day per user, shared with the version
+  submission; a request rejected by one window still counts in the others.
+  A sync makes 6 writes plus one DELETE per old preview (9 with three old
+  ones), so after a release it usually takes a little over an hour: the script logs and waits the time
+  AMO names, up to 61 minutes per wait, and fails at once on a longer one
+  (the daily limit). It also fails instead of waiting past 170 minutes, so
+  the warning comes before the 180-minute step timeout. After a throttle
+  failure the rollback usually fails too and leaves new previews next to
+  the old ones; the repair run replaces all of them. A release and a failed
+  sync use up about half of the daily limit, so repair on the next day:
+  a repair on the same day usually stops at the daily limit again. A
+  failure leaves a warning in the run and a note in the run summary; the
+  release goes on.
+  To repair, run the workflow *Sync AMO screenshots* (*Actions* tab, *Run
+  workflow*, choose the release tag, or `main` while its screenshots are
+  those of the release): it replaces all previews on the listing with the
+  ones of that ref, *dry-run* only prints the plan. Locally
   the same works with the AMO credentials in `AMO_JWT_ISSUER` and
   `AMO_JWT_SECRET`: `node scripts/sync-amo-previews.mjs [--dry-run]`.
 - **Chrome, manual:** if they changed, the run summary says so. Replace the

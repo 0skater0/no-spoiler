@@ -14,6 +14,9 @@ import { escapeCommandData } from "./lib/gh-actions.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const STORE = path.join(ROOT, "docs", "store");
+// Covers two hourly AMO windows (a repair run with leftovers on the listing) and stays below
+// timeout-minutes (180) of the workflow steps: a timeout kill would skip the warning.
+const TIME_BUDGET_MS = 170 * 60_000;
 
 const { values } = parseArgs({
   options: { "dry-run": { type: "boolean", default: false }, annotate: { type: "boolean", default: false } },
@@ -30,7 +33,12 @@ async function main() {
     .map((name) => ({ name, caption: captions[name] }));
 
   // The GUID stays the same when the listing's slug changes.
-  const client = createAmoClient({ issuer: AMO_JWT_ISSUER, secret: AMO_JWT_SECRET, addon: GECKO_ID });
+  const client = createAmoClient({
+    issuer: AMO_JWT_ISSUER,
+    secret: AMO_JWT_SECRET,
+    addon: GECKO_ID,
+    deadline: Date.now() + TIME_BUDGET_MS,
+  });
   const plan = planPreviewSync(await client.previews(), local);
 
   for (const u of plan.uploads) console.log(`upload  ${u.name} -> position ${u.position}: ${u.caption}`);
