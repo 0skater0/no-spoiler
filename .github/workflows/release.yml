@@ -100,8 +100,6 @@ jobs:
   firefox:
     needs: build
     runs-on: ubuntu-latest
-    outputs:
-      screenshots: ${{ steps.amo-screenshots.outcome }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -127,15 +125,39 @@ jobs:
         if: env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != ''
         run: node scripts/publish-firefox.mjs
 
-      # A failed screenshot update must not fail the Firefox job.
+  # Its own job, so the shared queue below can only ever hold back a screenshot sync,
+  # never a store submission.
+  amo-screenshots:
+    needs: [build, firefox]
+    if: needs.build.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    # One screenshot sync at a time, shared with amo-screenshots.yml.
+    concurrency:
+      group: amo-previews
+      cancel-in-progress: false
+    outputs:
+      screenshots: ${{ steps.amo-screenshots.outcome }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      # A failed screenshot update must not fail the release; the outcome goes to the notes.
+      # The script uses only Node built-ins, so no npm install runs next to the secrets.
       - name: Update the AMO screenshots
         id: amo-screenshots
         env:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
-        if: env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != '' && needs.build.outputs.changed == 'true'
+        if: env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != ''
         continue-on-error: true
-        timeout-minutes: 10
+        # AMO throttles bursts of writes; the script waits and retries.
+        timeout-minutes: 25
         run: node scripts/sync-amo-previews.mjs --annotate
 
   chrome:
@@ -166,7 +188,7 @@ jobs:
         run: node scripts/publish-chrome.mjs
 
   notes:
-    needs: [build, firefox, chrome]
+    needs: [build, firefox, chrome, amo-screenshots]
     if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     steps:
@@ -175,13 +197,13 @@ jobs:
         if: needs.build.outputs.changed == 'true'
         env:
           PREVIOUS: ${{ needs.build.outputs.previous }}
-          AMO_OUTCOME: ${{ needs.firefox.outputs.screenshots }}
+          AMO_OUTCOME: ${{ needs.amo-screenshots.outputs.screenshots }}
         run: |
           case "$AMO_OUTCOME" in
             success) AMO_NOTE="AMO: updated by the workflow." ;;
-            failure) AMO_NOTE="AMO: the update failed, see the warning of the run. To repair, run \`node scripts/sync-amo-previews.mjs\` by hand; it replaces all previews on the listing." ;;
+            failure) AMO_NOTE="AMO: the update failed, see the warning of the run. To repair, run the workflow *Sync AMO screenshots* (Actions tab) on this tag; it replaces all previews on the listing." ;;
             # skipped or empty: no AMO credentials, or the Firefox upload failed.
-            *) AMO_NOTE="AMO: not updated, the step was skipped (no AMO credentials or the Firefox upload failed). Run \`node scripts/sync-amo-previews.mjs\` by hand." ;;
+            *) AMO_NOTE="AMO: not updated, the step was skipped (no AMO credentials or the Firefox upload failed). Run the workflow *Sync AMO screenshots* (Actions tab) on this tag." ;;
           esac
           {
             echo "### Store screenshots changed"

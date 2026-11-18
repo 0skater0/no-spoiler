@@ -1,0 +1,47 @@
+name: Sync AMO screenshots
+
+# Replaces the screenshots of the AMO listing with docs/store/ of the chosen branch or tag.
+# The repair path when the screenshot step of a release failed; see docs/STORE.md.
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Only print the plan, change nothing
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    # AMO throttles bursts of writes; the script waits and retries.
+    timeout-minutes: 25
+    # One screenshot sync at a time, shared with the amo-screenshots job of release.yml.
+    # A dry run writes nothing and gets its own queue, so it cannot displace a waiting sync.
+    concurrency:
+      group: amo-previews${{ inputs.dry-run && '-dry-run' || '' }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      # The script uses only Node built-ins, so no npm install runs next to the secrets.
+      - name: Sync the AMO screenshots
+        env:
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            node scripts/sync-amo-previews.mjs --dry-run --annotate
+          else
+            node scripts/sync-amo-previews.mjs --annotate
+          fi

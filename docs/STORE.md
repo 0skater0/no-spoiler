@@ -279,11 +279,15 @@ changed). The release always has `docs/store/*.png` attached.
   change with the tag, so the store shows them while the new version is
   still in the AMO review. If an upload fails, the script removes the
   previews it already created; if only deleting the old ones fails, the new
-  set stays and the old ones remain next to it. A failure leaves a warning in
-  the run and a note in the run summary; the release goes on. To repair, run
-  `AMO_JWT_ISSUER=… AMO_JWT_SECRET=… node scripts/sync-amo-previews.mjs` by
-  hand: it replaces all previews on the listing with the local ones. Add
-  `--dry-run` to only print the plan (changes nothing).
+  set stays and the old ones remain next to it. AMO throttles bursts of
+  writes; the script waits the time AMO names (up to two minutes) and tries
+  again. A failure leaves a warning in the run and a note in the run summary;
+  the release goes on. To repair, run the workflow *Sync AMO screenshots*
+  (*Actions* tab, *Run workflow*, choose the release tag, or `main` while its
+  screenshots are those of the release): it replaces all previews on the
+  listing with the ones of that ref, *dry-run* only prints the plan. Locally
+  the same works with the AMO credentials in `AMO_JWT_ISSUER` and
+  `AMO_JWT_SECRET`: `node scripts/sync-amo-previews.mjs [--dry-run]`.
 - **Chrome, manual:** if they changed, the run summary says so. Replace the
   screenshots in the developer dashboard under *Store listing* with the files
   from the release or from `docs/store/`.

@@ -50,10 +50,65 @@ describe("preview sync plan", () => {
 
 function mockFetch(handler) {
   return vi.fn(async (url, init) => {
-    const { status = 200, body = {} } = handler(url, init) ?? {};
-    return new Response(status === 204 ? null : JSON.stringify(body), { status });
+    const { status = 200, body = {}, headers } = handler(url, init) ?? {};
+    return new Response(status === 204 ? null : JSON.stringify(body), { status, headers });
   });
 }
+
+describe("AMO client throttling", () => {
+  const addon = "{d27fe5e6-f507-492e-b030-1a17debff539}";
+  const throttled = (seconds) => ({
+    status: 429,
+    body: { detail: `Request was throttled. Expected available in ${seconds} seconds.` },
+  });
+
+  it("waits the time AMO names and repeats the request", async () => {
+    let calls = 0;
+    const fetchImpl = mockFetch(() => (++calls === 1 ? throttled(56) : { status: 201, body: { id: 5 } }));
+    const sleep = vi.fn(async () => {});
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep });
+    expect(await client.upload("a.png", Buffer.alloc(1), 0)).toEqual({ id: 5 });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(sleep).toHaveBeenCalledWith(57_000);
+  });
+
+  it("prefers the Retry-After header", async () => {
+    let calls = 0;
+    const fetchImpl = mockFetch(() =>
+      ++calls === 1 ? { ...throttled(56), headers: { "Retry-After": "3" } } : { status: 204 },
+    );
+    const sleep = vi.fn(async () => {});
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep });
+    await client.remove(7);
+    expect(sleep).toHaveBeenCalledWith(4_000);
+  });
+
+  it("waits a minute when AMO names no time", async () => {
+    let calls = 0;
+    const fetchImpl = mockFetch(() => (++calls === 1 ? { status: 429, body: {} } : { status: 204 }));
+    const sleep = vi.fn(async () => {});
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep });
+    await client.remove(7);
+    expect(sleep).toHaveBeenCalledWith(61_000);
+  });
+
+  it("fails at once instead of sleeping through a long throttle window", async () => {
+    const fetchImpl = mockFetch(() => ({ ...throttled(3600), headers: { "Retry-After": "3600" } }));
+    const sleep = vi.fn(async () => {});
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep });
+    await expect(client.remove(7)).rejects.toThrow(/429.*3600/);
+    expect(sleep).not.toHaveBeenCalled();
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("gives up after a few throttled attempts", async () => {
+    const fetchImpl = mockFetch(() => throttled(1));
+    const sleep = vi.fn(async () => {});
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl, sleep });
+    await expect(client.remove(7)).rejects.toThrow(/429/);
+    expect(fetchImpl).toHaveBeenCalledTimes(4);
+  });
+});
 
 describe("AMO client and sync", () => {
   const addon = "{d27fe5e6-f507-492e-b030-1a17debff539}";
