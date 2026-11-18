@@ -14,7 +14,8 @@ import { escapeCommandData } from "./lib/gh-actions.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const STORE = path.join(ROOT, "docs", "store");
-// Covers two hourly AMO windows (a repair run with leftovers on the listing) and stays below
+// Covers a repair run that waits for the hourly window and for writes leaving the daily one,
+// and stays below
 // timeout-minutes (180) of the workflow steps: a timeout kill would skip the warning.
 const TIME_BUDGET_MS = 170 * 60_000;
 

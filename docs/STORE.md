@@ -284,14 +284,15 @@ changed). The release always has `docs/store/*.png` attached.
   submission; a request rejected by one window still counts in the others.
   A sync makes 6 writes plus one DELETE per old preview (9 with three old
   ones), so after a release it usually takes a little over an hour: the
-  script logs and waits the time AMO names, which can exceed an hour. It
-  fails at once only when a wait would run past 170 minutes (the daily
-  limit, for example), so the warning comes before the 180-minute step
-  timeout. After a throttle
-  failure the rollback usually fails too and leaves new previews next to
-  the old ones; the repair run replaces all of them. A release and a failed
-  sync use up about half of the daily limit, so repair on the next day:
-  a repair on the same day usually stops at the daily limit again. A
+  script logs and waits the time AMO names, which can exceed an hour when
+  the daily window is full. It fails at once when a wait would end after
+  the 170-minute budget, and after six throttled retries of one request,
+  so the warning comes before the 180-minute step timeout. After a
+  throttle failure the rollback usually fails too and leaves new previews
+  next to the old ones; the repair run replaces all of them. A release and
+  a failed sync use up much of the daily limit, so start the repair at
+  least 24 hours after the failed run: an earlier one waits for writes to
+  leave the daily window and can run out of budget. A
   failure leaves a warning in the run and a note in the run summary; the
   release goes on.
   To repair, run the workflow *Sync AMO screenshots* (*Actions* tab, *Run

@@ -38,8 +38,9 @@ export function planPreviewSync(remote, local) {
 // (addon_submission_throttles in src/olympia/api/throttling.py of mozilla/addons-server).
 // A request rejected by one window still counts in the others. A sync with three
 // screenshots makes 6 writes plus one DELETE per old preview, so after a release it runs
-// into the hourly window and later writes wait for a slot. The waits AMO names do not
-// follow these windows exactly (one was 3729 s), so only the caller's deadline caps them.
+// into the hourly window and later writes wait for a slot. When the daily window is full,
+// AMO names the time until its oldest write ages out, which can exceed an hour, so only the
+// caller's deadline caps a wait.
 const THROTTLE_RETRIES = 6;
 const DEFAULT_THROTTLE_S = 60;
 
@@ -56,7 +57,8 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * @param {object} options
- * @param {number} [options.deadline] epoch ms; a throttle wait that would end later fails at once,
+ * @param {number} [options.deadline] epoch ms; a throttle wait that would end later fails at once
+ *   (without one, nothing caps a wait),
  *   so the caller can still report before an outer timeout kills the process
  * @param {(line: string) => void} [options.log] receives one line per throttle wait
  */
