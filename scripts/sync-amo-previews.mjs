@@ -1,26 +1,30 @@
 // Replaces the screenshots of the AMO listing with docs/store/screenshot-*.png
 // (file name order) and their captions from docs/store/captions.json.
 // Needs AMO_JWT_ISSUER and AMO_JWT_SECRET (same credentials as publish-firefox.mjs).
-// Usage: node scripts/sync-amo-previews.mjs [--dry-run] [--annotate]
-//   --dry-run   only print the plan (reads the listing, changes nothing)
-//   --annotate  report failures as a GitHub Actions warning (exit code stays 1)
+// Usage: node scripts/sync-amo-previews.mjs [--captions-only] [--dry-run] [--annotate]
+//   --captions-only  keep the images, only set captions and positions that differ
+//   --dry-run        only print the plan (reads the listing, changes nothing)
+//   --annotate       report failures as a GitHub Actions warning (exit code stays 1)
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { GECKO_ID } from "./build.mjs";
-import { applyPreviewSync, createAmoClient, planPreviewSync } from "./lib/amo.mjs";
+import { applyCaptionRepair, applyPreviewSync, createAmoClient, planCaptionRepair, planPreviewSync } from "./lib/amo.mjs";
 import { escapeCommandData } from "./lib/gh-actions.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const STORE = path.join(ROOT, "docs", "store");
 // Covers a repair run that waits for the hourly window and for writes leaving the daily one,
-// and stays below
-// timeout-minutes (180) of the workflow steps: a timeout kill would skip the warning.
+// and stays below timeout-minutes (180) of the workflow steps: a timeout kill would skip the warning.
 const TIME_BUDGET_MS = 170 * 60_000;
 
 const { values } = parseArgs({
-  options: { "dry-run": { type: "boolean", default: false }, annotate: { type: "boolean", default: false } },
+  options: {
+    "captions-only": { type: "boolean", default: false },
+    "dry-run": { type: "boolean", default: false },
+    annotate: { type: "boolean", default: false },
+  },
 });
 
 async function main() {
@@ -40,8 +44,17 @@ async function main() {
     addon: GECKO_ID,
     deadline: Date.now() + TIME_BUDGET_MS,
   });
-  const plan = planPreviewSync(await client.previews(), local);
+  const remote = await client.previews();
 
+  if (values["captions-only"]) {
+    const updates = planCaptionRepair(remote, local);
+    for (const u of updates) console.log(`patch   preview ${u.id} (${u.name}) -> position ${u.position}: ${u.caption}`);
+    if (!updates.length) console.log("All captions and positions are in place.");
+    if (!values["dry-run"]) await applyCaptionRepair(client, updates);
+    return;
+  }
+
+  const plan = planPreviewSync(remote, local);
   for (const u of plan.uploads) console.log(`upload  ${u.name} -> position ${u.position}: ${u.caption}`);
   for (const d of plan.deletes) console.log(`delete  preview ${d.id} (${d.imageUrl})`);
   if (values["dry-run"]) return;

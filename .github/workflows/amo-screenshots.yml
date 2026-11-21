@@ -9,6 +9,10 @@ on:
         description: Only print the plan, change nothing
         type: boolean
         default: false
+      captions-only:
+        description: Keep the images, only set captions and positions that differ
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -20,7 +24,8 @@ jobs:
     # submission; a sync makes 6 writes plus one DELETE per old preview. The script waits
     # for free slots and gives up on its own before this timeout.
     timeout-minutes: 180
-    # One screenshot sync at a time, shared with the amo-screenshots job of release.yml.
+    # One screenshot sync at a time, shared with the amo-screenshots job of release.yml; a
+    # captions-only run writes too and queues with them.
     # A dry run writes nothing and gets its own queue, so it cannot displace a waiting sync.
     concurrency:
       group: amo-previews${{ inputs.dry-run && '-dry-run' || '' }}
@@ -41,9 +46,9 @@ jobs:
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
           DRY_RUN: ${{ inputs.dry-run }}
+          CAPTIONS_ONLY: ${{ inputs.captions-only }}
         run: |
-          if [ "$DRY_RUN" = "true" ]; then
-            node scripts/sync-amo-previews.mjs --dry-run --annotate
-          else
-            node scripts/sync-amo-previews.mjs --annotate
-          fi
+          args=(--annotate)
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          if [ "$CAPTIONS_ONLY" = "true" ]; then args+=(--captions-only); fi
+          node scripts/sync-amo-previews.mjs "${args[@]}"

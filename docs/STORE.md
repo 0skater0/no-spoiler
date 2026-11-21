@@ -275,7 +275,11 @@ changed). The release always has `docs/store/*.png` attached.
 
 - **AMO, automatic:** if they changed, `scripts/sync-amo-previews.mjs` uploads
   all screenshots in file order with position and caption, then deletes the
-  previous ones, so the listing never runs empty. The listing screenshots
+  previous ones, so the listing never runs empty. AMO resizes each upload in
+  a background task that saves the whole preview and so overwrites a caption
+  set before it ends; the script therefore waits until the listing reports
+  the image sizes of the new preview (at most 3 minutes), then sets position
+  and caption and reads them back. The listing screenshots
   change with the tag, so the store shows them while the new version is
   still in the AMO review. If an upload fails, the script removes the
   previews it already created; if only deleting the old ones fails, the new
@@ -286,8 +290,8 @@ changed). The release always has `docs/store/*.png` attached.
   ones), so after a release it usually takes a little over an hour: the
   script logs and waits the time AMO names, which can exceed an hour when
   the daily window is full. It fails at once when a wait would end after
-  the 170-minute budget, and after six throttled retries of one request,
-  so the warning comes before the 180-minute step timeout. After a
+  the 170-minute budget, so the warning comes before the 180-minute step
+  timeout. It also gives up after six throttled retries of one request. After a
   throttle failure the rollback usually fails too and leaves new previews
   next to the old ones; the repair run replaces all of them. A release and
   a failed sync use up much of the daily limit, so start the repair at
@@ -298,9 +302,13 @@ changed). The release always has `docs/store/*.png` attached.
   To repair, run the workflow *Sync AMO screenshots* (*Actions* tab, *Run
   workflow*, choose the release tag, or `main` while its screenshots are
   those of the release): it replaces all previews on the listing with the
-  ones of that ref, *dry-run* only prints the plan. Locally
+  ones of that ref, *dry-run* only prints the plan. If only captions or
+  positions are wrong, *captions-only* keeps the images: it pairs the
+  previews in listing order with the screenshots in file order, refuses to
+  write when the counts differ, and patches only the previews whose English
+  caption or position differs, one write each. Locally
   the same works with the AMO credentials in `AMO_JWT_ISSUER` and
-  `AMO_JWT_SECRET`: `node scripts/sync-amo-previews.mjs [--dry-run]`.
+  `AMO_JWT_SECRET`: `node scripts/sync-amo-previews.mjs [--captions-only] [--dry-run]`.
 - **Chrome, manual:** if they changed, the run summary says so. Replace the
   screenshots in the developer dashboard under *Store listing* with the files
   from the release or from `docs/store/`.
