@@ -174,7 +174,8 @@ describe("AMO client throttling", () => {
 
 // Stand-in for the AMO add-on endpoints. Like the resize task of AMO, finishing the resize
 // of an upload saves the preview as loaded at upload time, so an earlier PATCH is lost.
-// Previews listed in stillResizing start in that state too.
+// Previews listed in stillResizing start in that state too. Like AMO, the listing is sorted
+// by position.
 function fakeAmo({ initial = [], stillResizing = [], resizePolls = 0, lostPatches = 0, override } = {}) {
   let next = 100;
   const resized = { image_size: [1280, 800], thumbnail_size: [533, 333] };
@@ -207,7 +208,7 @@ function fakeAmo({ initial = [], stillResizing = [], resizePolls = 0, lostPatche
       if (previews.has(pid)) previews.set(pid, { ...job.loaded, ...resized });
       resizing.delete(pid);
     }
-    return { body: { previews: [...previews.values()] } };
+    return { body: { previews: [...previews.values()].sort((a, b) => a.position - b.position) } };
   });
   return { fetchImpl, previews };
 }
@@ -292,8 +293,8 @@ describe("AMO client and sync", () => {
     const plan = planPreviewSync([{ id: 7 }, { id: 8 }], twoScreenshots);
     const err = await applyPreviewSync(amoClient(fetchImpl), plan, () => Buffer.alloc(1), quiet).catch((e) => e);
     expect(err.message).toBe(
-      "New images are in place, but these previews did not keep position and caption after two PATCHes: " +
-        "100 (a.png, expected position 0; position 0, caption null). Run the captions-only repair to set them",
+      "New images are in place, but these previews did not keep their caption after two PATCHes: " +
+        "100 (a.png, caption null). Run the captions-only repair to set them",
     );
     expect(writes(fetchImpl)).toEqual([
       "POST /previews/",
@@ -308,6 +309,42 @@ describe("AMO client and sync", () => {
       [100, null],
       [101, { "en-US": "B" }],
     ]);
+  });
+
+  it("rolls back and keeps the old previews when a preview is gone after the second PATCH", async () => {
+    let patches = 0;
+    const { fetchImpl, previews } = fakeAmo({
+      initial: [{ id: 7, position: 0 }],
+      lostPatches: 1,
+      override: (url, init) => {
+        if (init.method === "PATCH") patches++;
+        return init.method === "GET" && patches === 2 ? { body: { previews: [] } } : null;
+      },
+    });
+    const plan = planPreviewSync([{ id: 7 }], [{ name: "a.png", caption: "A" }]);
+    await expect(applyPreviewSync(amoClient(fetchImpl), plan, () => Buffer.alloc(1), quiet)).rejects.toThrow(
+      /^Preview 100 is no longer on the listing$/,
+    );
+    expect(writes(fetchImpl)).toEqual(["POST /previews/", "PATCH /previews/100/", "PATCH /previews/100/", "DELETE /previews/100/"]);
+    expect([...previews.keys()]).toEqual([7]);
+  });
+
+  it("rolls back when the position is still wrong after two PATCHes, even with the right caption", async () => {
+    // The PATCH takes the caption, but AMO lists the preview at another position.
+    const amo = fakeAmo({
+      initial: [{ id: 7, position: 0 }],
+      override: (url, init) => {
+        if (init.method !== "PATCH") return null;
+        const preview = Object.assign(amo.previews.get(100), { caption: JSON.parse(init.body).caption, position: 3 });
+        return { body: preview };
+      },
+    });
+    const plan = planPreviewSync([{ id: 7 }], [{ name: "a.png", caption: "A" }]);
+    await expect(applyPreviewSync(amoClient(amo.fetchImpl), plan, () => Buffer.alloc(1), quiet)).rejects.toThrow(
+      'Preview 100 did not keep position 0 after two PATCHes (position 3, caption {"en-US":"A"})',
+    );
+    expect(writes(amo.fetchImpl)).toEqual(["POST /previews/", "PATCH /previews/100/", "PATCH /previews/100/", "DELETE /previews/100/"]);
+    expect([...amo.previews.keys()]).toEqual([7]);
   });
 
   it("names both wrong captions and old leftovers", async () => {
@@ -518,11 +555,41 @@ describe("caption repair", () => {
     const err = await applyCaptionRepair(client, planCaptionRepair(remote, local), { log: () => {}, sleep: async () => {} }).catch(
       (e) => e,
     );
-    expect(err.message).toBe(
-      "These previews did not keep position and caption after two PATCHes: 12 (b.png, expected position 1; position 1, caption null)",
-    );
+    expect(err.message).toBe("These previews did not keep their caption after two PATCHes: 12 (b.png, caption null)");
     expect(repairCalls(fetchImpl).filter((m) => !m.startsWith("GET"))).toEqual(["PATCH /12/", "PATCH /12/", "PATCH /13/"]);
     expect(previews.get(13)).toMatchObject({ position: 2, caption: { "en-US": "C" } });
+  });
+
+  it("still names the caption failures so far when a later preview fails", async () => {
+    const { fetchImpl } = fakeAmo({
+      initial: remote,
+      lostPatches: 2,
+      override: (url, init) => (init.method === "PATCH" && url.endsWith("/13/") ? { status: 500, body: "boom" } : null),
+    });
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl });
+    const err = await applyCaptionRepair(client, planCaptionRepair(remote, local), { log: () => {}, sleep: async () => {} }).catch(
+      (e) => e,
+    );
+    expect(err.message).toMatch(
+      /^PATCH .*\/13\/: 500 .*\. Before that, these previews did not keep their caption after two PATCHes: 12 \(b\.png, caption null\)$/,
+    );
+  });
+
+  it("pairs the screenshots with the listing as AMO sorts it, by position", async () => {
+    // Upload order put a.png into preview 21 and b.png into 22, but their positions are swapped.
+    const { fetchImpl } = fakeAmo({
+      initial: [
+        { id: 21, position: 1, caption: { "en-US": "A" } },
+        { id: 22, position: 0, caption: { "en-US": "B" } },
+      ],
+    });
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl });
+    const listing = await client.previews();
+    expect(listing.map((p) => p.id)).toEqual([22, 21]);
+    expect(planCaptionRepair(listing, local.slice(0, 2))).toEqual([
+      { id: 22, name: "a.png", position: 0, caption: "A" },
+      { id: 21, name: "b.png", position: 1, caption: "B" },
+    ]);
   });
 });
 
