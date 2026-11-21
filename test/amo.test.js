@@ -174,11 +174,16 @@ describe("AMO client throttling", () => {
 
 // Stand-in for the AMO add-on endpoints. Like the resize task of AMO, finishing the resize
 // of an upload saves the preview as loaded at upload time, so an earlier PATCH is lost.
-function fakeAmo({ initial = [], resizePolls = 0, lostPatches = 0, override } = {}) {
+// Previews listed in stillResizing start in that state too.
+function fakeAmo({ initial = [], stillResizing = [], resizePolls = 0, lostPatches = 0, override } = {}) {
   let next = 100;
   const resized = { image_size: [1280, 800], thumbnail_size: [533, 333] };
   const previews = new Map(initial.map((p) => [p.id, { caption: null, ...resized, ...p }]));
   const resizing = new Map();
+  for (const id of stillResizing) {
+    Object.assign(previews.get(id), { image_size: [], thumbnail_size: [] });
+    resizing.set(id, { pollsLeft: resizePolls, loaded: { ...previews.get(id) } });
+  }
   const fetchImpl = mockFetch((url, init) => {
     const res = override?.(url, init, next);
     if (res) return res;
@@ -276,14 +281,103 @@ describe("AMO client and sync", () => {
     expect(log.mock.calls[0][0]).toMatch(/^Preview 100 did not keep position and caption \(position 0, caption null\)/);
   });
 
-  it("fails and rolls back when the caption is lost twice", async () => {
-    const { fetchImpl, previews } = fakeAmo({ initial: [{ id: 7, position: 0 }], lostPatches: 2 });
+  it("keeps the new images when a caption is lost twice, deletes the old ones and then fails", async () => {
+    const { fetchImpl, previews } = fakeAmo({
+      initial: [
+        { id: 7, position: 0 },
+        { id: 8, position: 1 },
+      ],
+      lostPatches: 2,
+    });
+    const plan = planPreviewSync([{ id: 7 }, { id: 8 }], twoScreenshots);
+    const err = await applyPreviewSync(amoClient(fetchImpl), plan, () => Buffer.alloc(1), quiet).catch((e) => e);
+    expect(err.message).toBe(
+      "New images are in place, but these previews did not keep position and caption after two PATCHes: " +
+        "100 (a.png, expected position 0; position 0, caption null). Run the captions-only repair to set them",
+    );
+    expect(writes(fetchImpl)).toEqual([
+      "POST /previews/",
+      "PATCH /previews/100/",
+      "PATCH /previews/100/",
+      "POST /previews/",
+      "PATCH /previews/101/",
+      "DELETE /previews/7/",
+      "DELETE /previews/8/",
+    ]);
+    expect([...previews.values()].map((p) => [p.id, p.caption])).toEqual([
+      [100, null],
+      [101, { "en-US": "B" }],
+    ]);
+  });
+
+  it("names both wrong captions and old leftovers", async () => {
+    const { fetchImpl } = fakeAmo({
+      initial: [{ id: 7, position: 0 }],
+      lostPatches: 2,
+      override: (url, init) => (init.method === "DELETE" ? { status: 500, body: "boom" } : null),
+    });
     const plan = planPreviewSync([{ id: 7 }], [{ name: "a.png", caption: "A" }]);
     await expect(applyPreviewSync(amoClient(fetchImpl), plan, () => Buffer.alloc(1), quiet)).rejects.toThrow(
-      /Preview 100 did not keep position 0 and its caption after two PATCHes/,
+      /captions-only repair to set them\. New previews are in place, but old previews are left on the listing: 7 \(DELETE/,
     );
-    expect(writes(fetchImpl)).toEqual(["POST /previews/", "PATCH /previews/100/", "PATCH /previews/100/", "DELETE /previews/100/"]);
-    expect([...previews.keys()]).toEqual([7]);
+  });
+
+  it("keeps polling after a failed read of the previews", async () => {
+    let gets = 0;
+    const { fetchImpl, previews } = fakeAmo({
+      resizePolls: 1,
+      override: (url, init) => {
+        if (init.method !== "GET") return null;
+        if (++gets === 1) throw new TypeError("fetch failed");
+        return gets === 2 ? { status: 503, body: "down" } : null;
+      },
+    });
+    const log = vi.fn();
+    const plan = planPreviewSync([], [{ name: "a.png", caption: "A" }]);
+    await applyPreviewSync(amoClient(fetchImpl), plan, () => Buffer.alloc(1), { ...quiet, log });
+
+    expect(callLog(fetchImpl)).toEqual(["POST /previews/", "GET /", "GET /", "GET /", "GET /", "PATCH /previews/100/", "GET /"]);
+    expect(previews.get(100).caption).toEqual({ "en-US": "A" });
+    expect(log.mock.calls.flat().filter((l) => l.startsWith("Reading the previews failed"))).toHaveLength(2);
+  });
+
+  it("fails at once on a client error while reading the previews", async () => {
+    const { fetchImpl } = fakeAmo({
+      override: (url, init) => (init.method === "GET" ? { status: 401, body: { detail: "bad token" } } : null),
+    });
+    const sleep = vi.fn(async () => {});
+    const plan = planPreviewSync([], [{ name: "a.png", caption: "A" }]);
+    await expect(applyPreviewSync(amoClient(fetchImpl), plan, () => Buffer.alloc(1), { log: () => {}, sleep })).rejects.toThrow(
+      /GET .*: 401/,
+    );
+    expect(sleep).not.toHaveBeenCalled();
+    expect(writes(fetchImpl)).toEqual(["POST /previews/", "DELETE /previews/100/"]);
+  });
+
+  it("fails at once when the preview vanishes from the listing while it waits", async () => {
+    let gets = 0;
+    const { fetchImpl } = fakeAmo({
+      initial: [{ id: 7, position: 0 }],
+      resizePolls: Infinity,
+      override: (url, init) => (init.method === "GET" && ++gets === 2 ? { body: { previews: [] } } : null),
+    });
+    const sleep = vi.fn(async () => {});
+    const plan = planPreviewSync([{ id: 7 }], [{ name: "a.png", caption: "A" }]);
+    await expect(applyPreviewSync(amoClient(fetchImpl), plan, () => Buffer.alloc(1), { log: () => {}, sleep })).rejects.toThrow(
+      "Preview 100 is no longer on the listing",
+    );
+    expect(callLog(fetchImpl)).toEqual(["POST /previews/", "GET /", "GET /", "DELETE /previews/100/"]);
+    expect(sleep).toHaveBeenCalledTimes(1);
+  });
+
+  it("waits for an upload that a lagging read does not list yet", async () => {
+    let gets = 0;
+    const { fetchImpl, previews } = fakeAmo({
+      override: (url, init) => (init.method === "GET" && ++gets === 1 ? { body: { previews: [] } } : null),
+    });
+    const plan = planPreviewSync([], [{ name: "a.png", caption: "A" }]);
+    await applyPreviewSync(amoClient(fetchImpl), plan, () => Buffer.alloc(1), quiet);
+    expect(previews.get(100).caption).toEqual({ "en-US": "A" });
   });
 
   it("gives up on a resize that does not finish and rolls back", async () => {
@@ -404,6 +498,31 @@ describe("caption repair", () => {
       [13, 2, "C"],
     ]);
     expect(log).toHaveBeenCalledWith("Set caption and position 2 of preview 13 (c.png)");
+  });
+
+  const repairCalls = (fetchImpl) => fetchImpl.mock.calls.map(([url, init]) => `${init.method} ${url.split("/previews")[1] ?? "/"}`);
+
+  it("waits for a resize that is still running before the PATCH", async () => {
+    const { fetchImpl, previews } = fakeAmo({ initial: remote, stillResizing: [12], resizePolls: 2 });
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl });
+    const log = vi.fn();
+    await applyCaptionRepair(client, planCaptionRepair(remote, local).slice(0, 1), { log, sleep: async () => {} });
+    expect(repairCalls(fetchImpl)).toEqual(["GET /", "GET /", "GET /", "PATCH /12/", "GET /"]);
+    expect(previews.get(12).caption).toEqual({ "en-US": "B" });
+    expect(log).toHaveBeenCalledWith("Waiting for AMO to resize preview 12");
+  });
+
+  it("goes on with the other previews when a caption is lost twice and then fails, without uploads or deletes", async () => {
+    const { fetchImpl, previews } = fakeAmo({ initial: remote, lostPatches: 2 });
+    const client = createAmoClient({ issuer: "i", secret: "s", addon, fetchImpl });
+    const err = await applyCaptionRepair(client, planCaptionRepair(remote, local), { log: () => {}, sleep: async () => {} }).catch(
+      (e) => e,
+    );
+    expect(err.message).toBe(
+      "These previews did not keep position and caption after two PATCHes: 12 (b.png, expected position 1; position 1, caption null)",
+    );
+    expect(repairCalls(fetchImpl).filter((m) => !m.startsWith("GET"))).toEqual(["PATCH /12/", "PATCH /12/", "PATCH /13/"]);
+    expect(previews.get(13)).toMatchObject({ position: 2, caption: { "en-US": "C" } });
   });
 });
 

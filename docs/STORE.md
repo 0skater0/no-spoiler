@@ -281,13 +281,18 @@ changed). The release always has `docs/store/*.png` attached.
   the image sizes of the new preview (at most 3 minutes), then sets position
   and caption and reads them back. The listing screenshots
   change with the tag, so the store shows them while the new version is
-  still in the AMO review. If an upload fails, the script removes the
-  previews it already created; if only deleting the old ones fails, the new
-  set stays and the old ones remain next to it. AMO allows 3 writes per
-  minute, 10 per hour and 24 per day per user, shared with the version
-  submission; a request rejected by one window still counts in the others.
-  A sync makes 6 writes plus one DELETE per old preview (9 with three old
-  ones), so after a release it usually takes a little over an hour: the
+  still in the AMO review. If an upload or PATCH request fails or a resize
+  does not finish in time, the script removes the previews it already
+  created, since an unresized preview is not trustworthy. If a caption or
+  position still does not stick after a second PATCH, the new images stay:
+  the script finishes the sync, deletes the old previews and then fails with
+  the previews whose caption is wrong, to be fixed with the *captions-only*
+  repair below. If only deleting the old ones fails, the new set stays and
+  the old ones remain next to it. AMO allows 3 writes per minute, 10 per
+  hour and 24 per day per user, shared with the version submission; a
+  request rejected by one window still counts in the others. A sync makes 6
+  writes, up to 9 when captions have to be set again, plus one DELETE per
+  old preview (9 to 12 with three old ones), so after a release it usually takes a little over an hour: the
   script logs and waits the time AMO names, which can exceed an hour when
   the daily window is full. It fails at once when a wait would end after
   the 170-minute budget, so the warning comes before the 180-minute step
@@ -306,7 +311,8 @@ changed). The release always has `docs/store/*.png` attached.
   positions are wrong, *captions-only* keeps the images: it pairs the
   previews in listing order with the screenshots in file order, refuses to
   write when the counts differ, and patches only the previews whose English
-  caption or position differs, one write each. Locally
+  caption or position differs, one write each, two if the caption has to be
+  set again. Locally
   the same works with the AMO credentials in `AMO_JWT_ISSUER` and
   `AMO_JWT_SECRET`: `node scripts/sync-amo-previews.mjs [--captions-only] [--dry-run]`.
 - **Chrome, manual:** if they changed, the run summary says so. Replace the

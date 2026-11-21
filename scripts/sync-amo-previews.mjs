@@ -65,7 +65,9 @@ try {
   await main();
 } catch (err) {
   if (!values.annotate) throw err;
-  const repair = "To repair, run the workflow Sync AMO screenshots on the release tag (or main); it replaces all previews on the listing.";
+  const repair =
+    "To repair, run the workflow Sync AMO screenshots on the release tag (or main); it replaces all previews on the listing. " +
+    "If the new images are in place and only captions or positions are wrong, run it with the input captions-only instead.";
   // GitHub Actions shows ::warning lines as annotations of the run.
   console.log(`::warning title=AMO screenshot sync failed::${escapeCommandData(`${err.message}\n${repair}`)}`);
   // Still a failure, so the workflow can tell an update from a failed one by the step outcome.

@@ -63,8 +63,9 @@ const previewMatches = (preview, { position, caption }) =>
 // windows shared with all add-on writes, the version submission included
 // (addon_submission_throttles in src/olympia/api/throttling.py of mozilla/addons-server).
 // A request rejected by one window still counts in the others. A sync with three
-// screenshots makes 6 writes plus one DELETE per old preview, so after a release it runs
-// into the hourly window and later writes wait for a slot. When the daily window is full,
+// screenshots makes 6 writes (up to 9 when captions have to be set again) plus one DELETE
+// per old preview, so after a release it runs into the hourly window and later writes
+// wait for a slot. When the daily window is full,
 // AMO names the time until its oldest write ages out, which can exceed an hour, so only the
 // caller's deadline caps a wait.
 const THROTTLE_RETRIES = 6;
@@ -118,7 +119,7 @@ export function createAmoClient({
         await sleep(delay);
         continue;
       }
-      if (!res.ok) throw new Error(`${method} ${path}: ${res.status} ${text.slice(0, 300)}`);
+      if (!res.ok) throw Object.assign(new Error(`${method} ${path}: ${res.status} ${text.slice(0, 300)}`), { status: res.status });
       return text ? JSON.parse(text) : {};
     }
   }
@@ -154,52 +155,85 @@ function previewTiming({ log = console.log, sleep = wait, pollMs = PREVIEW_POLL_
 
 const isResized = (preview) => preview?.image_size?.length > 0 && preview?.thumbnail_size?.length > 0;
 
-async function waitForResize(client, id, { log, sleep, pollMs, resizeTimeoutMs }) {
+// A client error other than a throttle does not go away by polling again.
+const isTransient = (err) => !(err.status >= 400 && err.status < 500 && err.status !== 429);
+
+/**
+ * Polls the listing until the preview reports its image sizes. A read that fails with a
+ * network error, a 5xx or a 429 counts as "not resized yet".
+ * @param {boolean} [listed] the preview was already seen on the listing; right after the
+ *   upload a lagging read may not list it yet, so only a preview seen before that is gone
+ *   fails at once
+ */
+async function waitForResize(client, id, { log, sleep, pollMs, resizeTimeoutMs }, listed = false) {
   for (let waited = 0; ; waited += pollMs) {
-    if (isResized((await client.previews()).find((p) => p.id === id))) return;
+    let previews = null;
+    try {
+      previews = await client.previews();
+    } catch (err) {
+      if (!isTransient(err)) throw err;
+      log(`Reading the previews failed (${err.message}), trying again`);
+    }
+    if (previews) {
+      const preview = previews.find((p) => p.id === id);
+      if (isResized(preview)) return;
+      if (preview) listed = true;
+      else if (listed) throw new Error(`Preview ${id} is no longer on the listing`);
+    }
     if (waited >= resizeTimeoutMs) throw new Error(`AMO did not finish resizing preview ${id} within ${resizeTimeoutMs / 1000} s`);
     if (!waited) log(`Waiting for AMO to resize preview ${id}`);
     await sleep(pollMs);
   }
 }
 
-// Reads the preview back after the PATCH and repeats it once, so a lost caption shows up
-// as an error instead of a silently empty listing text.
+/**
+ * Reads the preview back after the PATCH and repeats it once, so a lost caption shows up
+ * instead of a silently empty listing text.
+ * @returns {Promise<string | null>} null when position and caption stuck, else what AMO lists
+ */
 async function updateAndVerify(client, { id, position, caption }, timing) {
   for (let attempt = 1; ; attempt++) {
     await client.update(id, { position, caption: { "en-US": caption } });
+    // AMO reads from DB replicas and fetch keeps no pinning cookie, so an immediate read can see the old state.
     await timing.sleep(timing.pollMs);
     const preview = (await client.previews()).find((p) => p.id === id);
-    if (preview && previewMatches(preview, { position, caption })) return;
+    if (preview && previewMatches(preview, { position, caption })) return null;
     const found = preview ? `position ${preview.position}, caption ${JSON.stringify(preview.caption)}` : "not listed";
-    if (attempt === 2) throw new Error(`Preview ${id} did not keep position ${position} and its caption after two PATCHes (${found})`);
+    if (attempt === 2) return found;
     timing.log(`Preview ${id} did not keep position and caption (${found}), setting them again`);
-    await waitForResize(client, id, timing);
+    await waitForResize(client, id, timing, true);
   }
 }
+
+const wrongCaptionsMessage = (wrong) =>
+  `did not keep position and caption after two PATCHes: ${wrong.join("; ")}`;
 
 /**
  * Uploads first and deletes afterwards, so the listing never runs empty. The
  * PATCH is needed because AMO cannot take the caption with the upload; it sets
  * the position again because the documented upload field name is inconsistent
  * ("postion"). It waits for the resize of the upload, see waitForResize.
- * If an upload or PATCH fails, the previews created in this run are removed
- * again, so the old set stays alone. That rollback is best effort: after a
- * throttle failure its DELETEs hit the same full window and fail too, and the
- * error names the previews left behind. If only deleting an old preview fails,
- * the new set is complete and stays; the error names the leftovers.
+ * If an upload or PATCH request fails or a resize does not finish, the previews
+ * created in this run are removed again, so the old set stays alone. That
+ * rollback is best effort: after a throttle failure its DELETEs hit the same
+ * full window and fail too, and the error names the previews left behind.
+ * A caption that does not stick keeps the new images: the sync finishes and the
+ * error names the previews for the captions-only repair. If only deleting an
+ * old preview fails, the new set is complete and stays; the error names the leftovers.
  * @param {{log?: (line: string) => void, sleep?: (ms: number) => Promise<void>, pollMs?: number, resizeTimeoutMs?: number}} [options]
  */
 export async function applyPreviewSync(client, plan, readFile, options = {}) {
   const timing = previewTiming(options);
   const { log } = timing;
   const created = [];
+  const wrongCaptions = [];
   try {
     for (const u of plan.uploads) {
       const preview = await client.upload(u.name, readFile(u.name), u.position);
       created.push(preview.id);
       await waitForResize(client, preview.id, timing);
-      await updateAndVerify(client, { id: preview.id, position: u.position, caption: u.caption }, timing);
+      const found = await updateAndVerify(client, { id: preview.id, position: u.position, caption: u.caption }, timing);
+      if (found) wrongCaptions.push(`${preview.id} (${u.name}, expected position ${u.position}; ${found})`);
       log(`Uploaded ${u.name} as preview ${preview.id} at position ${u.position}`);
     }
   } catch (err) {
@@ -212,23 +246,30 @@ export async function applyPreviewSync(client, plan, readFile, options = {}) {
     plan.deletes.map((d) => d.id),
     (id) => log(`Deleted preview ${id}`),
   );
-  if (leftovers.length) {
-    throw new Error(`New previews are in place, but old previews are left on the listing: ${leftovers.join("; ")}`);
+  const problems = [];
+  if (wrongCaptions.length) {
+    problems.push(`New images are in place, but these previews ${wrongCaptionsMessage(wrongCaptions)}. Run the captions-only repair to set them`);
   }
+  if (leftovers.length) problems.push(`New previews are in place, but old previews are left on the listing: ${leftovers.join("; ")}`);
+  if (problems.length) throw new Error(problems.join(". "));
 }
 
 /**
  * Applies planCaptionRepair: one verified PATCH per listed preview, nothing is uploaded or deleted.
+ * A preview whose caption does not stick does not stop the others; the error names all of them.
  * @param {{log?: (line: string) => void, sleep?: (ms: number) => Promise<void>, pollMs?: number, resizeTimeoutMs?: number}} [options]
  */
 export async function applyCaptionRepair(client, updates, options = {}) {
   const timing = previewTiming(options);
+  const wrong = [];
   for (const u of updates) {
     // A preview from a sync that just failed may still be in the resize.
-    await waitForResize(client, u.id, timing);
-    await updateAndVerify(client, u, timing);
-    timing.log(`Set caption and position ${u.position} of preview ${u.id} (${u.name})`);
+    await waitForResize(client, u.id, timing, true);
+    const found = await updateAndVerify(client, u, timing);
+    if (found) wrong.push(`${u.id} (${u.name}, expected position ${u.position}; ${found})`);
+    else timing.log(`Set caption and position ${u.position} of preview ${u.id} (${u.name})`);
   }
+  if (wrong.length) throw new Error(`These previews ${wrongCaptionsMessage(wrong)}`);
 }
 
 // Best effort: keeps going after a failure and returns "id (reason)" per preview it could not remove.

@@ -21,11 +21,13 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     # AMO allows 3 writes per minute, 10 per hour and 24 per day, shared with the version
-    # submission; a sync makes 6 writes plus one DELETE per old preview. The script waits
-    # for free slots and gives up on its own before this timeout.
+    # submission; a sync makes 6 writes (up to 9 with caption retries) plus one DELETE per
+    # old preview. The script waits for free slots and gives up on its own before this timeout.
     timeout-minutes: 180
     # One screenshot sync at a time, shared with the amo-screenshots job of release.yml; a
-    # captions-only run writes too and queues with them.
+    # captions-only run writes too and queues with them. GitHub keeps only one pending run
+    # per group: a newly queued run replaces a pending one, so start a repair only when no
+    # release sync is waiting.
     # A dry run writes nothing and gets its own queue, so it cannot displace a waiting sync.
     concurrency:
       group: amo-previews${{ inputs.dry-run && '-dry-run' || '' }}

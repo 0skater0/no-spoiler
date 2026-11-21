@@ -157,7 +157,8 @@ jobs:
         if: env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != ''
         continue-on-error: true
         # AMO allows 3 writes per minute, 10 per hour and 24 per day, shared with the version
-        # submission; a sync makes 6 writes plus one DELETE per old preview. The script waits
+        # submission; a sync makes 6 writes (up to 9 with caption retries) plus one DELETE per
+        # old preview. The script waits
         # for free slots and gives up on its own before this timeout.
         timeout-minutes: 180
         run: node scripts/sync-amo-previews.mjs --annotate
@@ -203,7 +204,7 @@ jobs:
         run: |
           case "$AMO_OUTCOME" in
             success) AMO_NOTE="AMO: updated by the workflow." ;;
-            failure) AMO_NOTE="AMO: the update failed, see the warning of the run. To repair, run the workflow *Sync AMO screenshots* (Actions tab) on this tag; it replaces all previews on the listing." ;;
+            failure) AMO_NOTE="AMO: the update failed, see the warning of the run. To repair, run the workflow *Sync AMO screenshots* (Actions tab) on this tag; it replaces all previews on the listing. If the warning says only captions or positions are wrong, run it with *captions-only*, which keeps the images." ;;
             # skipped or empty: no AMO credentials, or the Firefox upload failed.
             *) AMO_NOTE="AMO: not updated, the step was skipped (no AMO credentials or the Firefox upload failed). Run the workflow *Sync AMO screenshots* (Actions tab) on this tag." ;;
           esac
